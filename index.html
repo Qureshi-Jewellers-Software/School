@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light only">
+<title>School Manager (Demo)</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+:root{color-scheme:light;--p:#1b5e9b;--p2:#e8f1fa;--ok:#1e8e4e;--okb:#e5f5ec;--bad:#c0392b;--badb:#fbeaea;--warn:#b7791f;--warnb:#fdf3e1;--tx:#1d2733;--mut:#66727f;--bd:#dde3ea;--bg:#f4f6f9;--card:#fff}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--tx);font-size:15px}
+header{background:var(--p);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5}
+header h1{font-size:17px;margin:0}
+header small{opacity:.8;font-size:12px;display:block}
+main{padding:14px;max-width:900px;margin:0 auto;padding-bottom:90px}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--bd);display:flex;z-index:5}
+nav button{flex:1;border:0;background:none;padding:9px 2px 10px;font-size:11px;color:var(--mut);cursor:pointer}
+nav button b{display:block;font-size:20px;line-height:1.1}
+nav button.on{color:var(--p);font-weight:600}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.stat{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:12px}
+.stat .n{font-size:22px;font-weight:700}
+.stat .l{font-size:12px;color:var(--mut)}
+h2{font-size:17px;margin:4px 0 12px}
+h3{font-size:15px;margin:0 0 10px}
+.btn{border:0;background:var(--p);color:#fff;padding:10px 14px;border-radius:9px;font-size:14px;cursor:pointer;font-weight:600}
+.btn.sec{background:var(--p2);color:var(--p)}
+.btn.ok{background:var(--ok)}
+.btn.bad{background:var(--bad)}
+.btn.sm{padding:6px 10px;font-size:13px}
+.btn.full{width:100%}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sp{flex:1}
+input,select,textarea{width:100%;padding:10px;border:1px solid var(--bd);border-radius:9px;font-size:16px;background:#fff !important;color:#1d2733 !important;-webkit-text-fill-color:#1d2733;caret-color:#1b5e9b}
+input::placeholder{color:#8a96a3;-webkit-text-fill-color:#8a96a3}
+.pw{position:relative}.pw input{padding-right:46px}.pw .eye{position:absolute;right:4px;top:50%;transform:translateY(-50%);border:0;background:none;font-size:20px;padding:6px 8px;cursor:pointer}
+label{font-size:12px;color:var(--mut);display:block;margin:8px 0 3px}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.list .it{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--bd)}
+.list .it:last-child{border-bottom:0}
+.av{width:44px;height:44px;border-radius:50%;background:var(--p2);color:var(--p);display:flex;align-items:center;justify-content:center;font-weight:700;overflow:hidden;flex:none}
+.av img{width:100%;height:100%;object-fit:cover}
+.mut{color:var(--mut);font-size:13px}
+.tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:12px;font-weight:600}
+.t-ok{background:var(--okb);color:var(--ok)}.t-bad{background:var(--badb);color:var(--bad)}.t-warn{background:var(--warnb);color:var(--warn)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.modal .box{background:#fff;width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:16px 16px 0 0;padding:16px}
+@media(min-width:600px){.modal{align-items:center}.modal .box{border-radius:16px}}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:9px;z-index:30;font-size:14px}
+.login{max-width:380px;margin:40px auto}
+.chips{display:flex;gap:6px;overflow:auto;padding-bottom:6px;margin-bottom:8px}
+.chips button{white-space:nowrap;border:1px solid var(--bd);background:#fff;border-radius:20px;padding:6px 12px;font-size:13px;cursor:pointer}
+.chips button.on{background:var(--p);color:#fff;border-color:var(--p)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td,th{padding:7px 6px;border-bottom:1px solid var(--bd);text-align:left}
+.big{font-size:44px;text-align:center;margin:6px 0}
+#reader{width:100%}
+/* Voucher */
+.vwrap{display:flex;flex-direction:column;gap:10px}
+.vch{border:1.5px dashed #555;padding:10px 12px;font-size:12.5px;background:#fff;color:#000}
+.vch .vh{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid #000;padding-bottom:6px;margin-bottom:6px}
+.vch .vh b{font-size:15px}
+.vch table td{padding:3px 4px;border-bottom:1px solid #ccc}
+.vch .copy{font-size:11px;font-weight:700;border:1px solid #000;padding:1px 6px}
+.vch .tot td{font-weight:700;border-top:1.5px solid #000}
+#printArea{display:none}
+@media print{
+ body *{visibility:hidden}
+ #printArea,#printArea *{visibility:visible}
+ #printArea{display:block;position:absolute;left:0;top:0;width:100%}
+ .vch{page-break-inside:avoid}
+ .pbreak{page-break-after:always}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="printArea"></div>
+<script>
+/* ============ DATA (demo: is phone/browser mein; baad mein Supabase) ============ */
+const CLASSES=["Play Group","Nursery","Prep (KG)","Class 1","Class 2","Class 3","Class 4","Class 5","Class 6","Class 7","Class 8","Class 9","Class 10"];
+const KEY="school_demo_v1";
+let mem=null;
+function uid(){return Math.random().toString(36).slice(2,10)}
+function today(){const d=new Date();return d.toISOString().slice(0,10)}
+function ym(d){d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")}
+function monthName(m){const [y,mm]=m.split("-");return ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+mm-1]+" "+y}
+function rs(n){return "Rs "+Number(n||0).toLocaleString("en-PK")}
+function seed(){
+  const s=[["Ali Raza","Muhammad Raza","03001234567","Class 5",3500],["Fatima Raza","Muhammad Raza","03001234567","Class 2",3000],["Hamza Raza","Muhammad Raza","03001234567","Nursery",2500],
+  ["Ayesha Khan","Imran Khan","03111222333","Class 8",4000],["Usman Ahmed","Tariq Ahmed","03214445566","Class 10",4500],["Zainab Bibi","Abdul Ghani","03337778899","Prep (KG)",2500],["Bilal Hussain","Akhtar Hussain","03451112223","Class 5",3500]];
+  const students=s.map((x,i)=>({id:uid(),name:x[0],father:x[1],phone:x[2],cls:x[3],roll:String(i+1),fee:x[4],discount:x[1]==="Muhammad Raza"&&i>0?300:0,photo:"",adm:today()}));
+  const teachers=[{id:uid(),name:"Sana Malik",phone:"03009990001",subject:"English",salary:25000,pin:"1111"},{id:uid(),name:"Kashif Iqbal",phone:"03009990002",subject:"Maths",salary:28000,pin:"2222"},{id:uid(),name:"Nadia Parveen",phone:"03009990003",subject:"Urdu",salary:22000,pin:"3333"}];
+  return {settings:{school:"Demo School",address:"Main Road, Karachi",phone:"0300-0000000",dueDay:10,fine:200,start:"08:00",grace:10,lat:null,lng:null,radius:150,qr:"SCH-"+uid().toUpperCase(),gpsOn:true,adminUser:"admin",adminPin:"1234"},students,teachers,fees:[],tatt:[],rcpt:1000};
+}
+function load(){try{const t=localStorage.getItem(KEY);if(t){mem=JSON.parse(t);return}}catch(e){}mem=seed();save()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(mem))}catch(e){}}
+load();
+let S={user:null,tab:"dash",cls:"Sab",month:ym(),q:""};
+try{const u=sessionStorage.getItem("school_user");if(u)S.user=JSON.parse(u)}catch(e){}
+
+/* ============ HELPERS ============ */
+const $=s=>document.querySelector(s);
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function toast(m){const d=document.createElement("div");d.className="toast";d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),2200)}
+function modal(html){closeModal();const m=document.createElement("div");m.className="modal";m.id="mdl";m.innerHTML='<div class="box">'+html+'</div>';m.addEventListener("click",e=>{if(e.target===m)closeModal()});document.body.appendChild(m)}
+function closeModal(){const m=$("#mdl");if(m)m.remove();stopScan()}
+function ask(msg,yes){modal('<h3>'+esc(msg)+'</h3><div class="row"><button class="btn sec sp" onclick="closeModal()">Nahi</button><button class="btn bad sp" id="yesB">Haan</button></div>');$("#yesB").onclick=()=>{closeModal();yes()}}
+function avatar(st){return '<div class="av">'+(st.photo?'<img src="'+st.photo+'">':esc((st.name||"?")[0]))+'</div>'}
+function waNum(p){p=String(p||"").replace(/\D/g,"");if(p.startsWith("0"))p="92"+p.slice(1);return p}
+function netFee(st){return Math.max(0,(+st.fee||0)-(+st.discount||0))}
+function dueDate(m){return m+"-"+String(mem.settings.dueDay).padStart(2,"0")}
+
+/* ============ LOGIN ============ */
+function viewLogin(){
+  return `<div class="login"><div class="card"><h2 style="text-align:center">🏫 ${esc(mem.settings.school)}</h2>
+  <div class="chips" style="justify-content:center"><button class="on" id="lA" onclick="lt('a')">Admin / Office</button><button id="lT" onclick="lt('t')">Teacher</button></div>
+  <div id="lf"></div></div>
+  <p class="mut" style="text-align:center">Demo: Admin <b>admin</b> / PIN <b>1234</b><br>Teacher: 03009990001 / PIN 1111</p></div>`;
+}
+function lt(k){$("#lA").classList.toggle("on",k==="a");$("#lT").classList.toggle("on",k==="t");
+  $("#lf").innerHTML=k==="a"?`<label>User</label><input id="lu" value=""><label>PIN</label><div class="pw"><input id="lp" type="password" inputmode="numeric"><button type="button" class="eye" onclick="eye(this)">👁️</button></div><br><br><button class="btn full" onclick="doLogin('a')">Login</button>`
+  :`<label>Mobile number</label><input id="lu" inputmode="numeric"><label>PIN</label><div class="pw"><input id="lp" type="password" inputmode="numeric"><button type="button" class="eye" onclick="eye(this)">👁️</button></div><br><br><button class="btn full" onclick="doLogin('t')">Login</button>`}
+function eye(b){const i=b.previousElementSibling;const sh=i.type==="password";i.type=sh?"text":"password";b.textContent=sh?"🙈":"👁️"}
+function doLogin(k){const u=$("#lu").value.trim(),p=$("#lp").value.trim();
+  if(k==="a"){if(u===mem.settings.adminUser&&p===mem.settings.adminPin){S.user={role:"admin"}}else return toast("Ghalat user ya PIN")}
+  else{const t=mem.teachers.find(t=>t.phone===u&&t.pin===p);if(!t)return toast("Ghalat number ya PIN");S.user={role:"teacher",id:t.id}}
+  try{sessionStorage.setItem("school_user",JSON.stringify(S.user))}catch(e){}
+  S.tab=S.user.role==="admin"?"dash":"tcheck";render()}
+function logout(){S.user=null;try{sessionStorage.removeItem("school_user")}catch(e){}render()}
+
+/* ============ DASHBOARD ============ */
+function viewDash(){
+  const m=ym(),fs=mem.fees.filter(f=>f.month===m);
+  const exp=fs.reduce((a,f)=>a+f.total,0),got=fs.filter(f=>f.status==="paid").reduce((a,f)=>a+f.total,0);
+  const td=today(),att=mem.tatt.filter(a=>a.date===td);
+  const pres=att.length,late=att.filter(a=>a.late).length,abs=mem.teachers.length-pres;
+  const unpaid=fs.filter(f=>f.status!=="paid").slice(0,6);
+  return `<h2>Assalam o Alaikum 👋</h2>
+  <div class="grid">
+   <div class="stat"><div class="n">${mem.students.length}</div><div class="l">Kul students</div></div>
+   <div class="stat"><div class="n">${mem.teachers.length}</div><div class="l">Teachers</div></div>
+   <div class="stat"><div class="n" style="color:var(--ok)">${rs(got)}</div><div class="l">${monthName(m)} fee mili</div></div>
+   <div class="stat"><div class="n" style="color:var(--bad)">${rs(exp-got)}</div><div class="l">Baqaya</div></div>
+  </div><br>
+  <div class="card"><h3>Aaj teachers ki haazri</h3><div class="row">
+   <span class="tag t-ok">Haazir ${pres-late}</span><span class="tag t-warn">Late ${late}</span><span class="tag t-bad">Ghair-haazir ${abs}</span><span class="sp"></span>
+   <button class="btn sm sec" onclick="go('teach')">Detail</button></div></div>
+  <div class="card"><h3>Fee baqaya (${monthName(m)})</h3>
+   ${!fs.length?'<p class="mut">Is mahine ke voucher abhi nahi bane.</p><button class="btn" onclick="go(\'fees\')">Voucher banayein</button>':
+   unpaid.length?'<div class="list">'+unpaid.map(f=>{const st=stu(f.sid);return st?`<div class="it">${avatar(st)}<div class="sp"><b>${esc(st.name)}</b><div class="mut">${esc(st.cls)}</div></div><b>${rs(f.total)}</b></div>`:""}).join("")+'</div>':'<p class="mut">Sab ne fee de di ✅</p>'}
+  </div>`;
+}
+
+/* ============ STUDENTS ============ */
+function stu(id){return mem.students.find(s=>s.id===id)}
+function viewStudents(){
+  let L=mem.students.filter(s=>(S.cls==="Sab"||s.cls===S.cls)&&(!S.q||(s.name+s.father+s.phone).toLowerCase().includes(S.q.toLowerCase())));
+  L.sort((a,b)=>CLASSES.indexOf(a.cls)-CLASSES.indexOf(b.cls)||a.name.localeCompare(b.name));
+  return `<div class="row"><h2 class="sp">Students (${L.length})</h2><button class="btn" onclick="editStu()">+ Naya admission</button></div>
+  <input placeholder="🔍 Naam ya number se dhoondein" value="${esc(S.q)}" oninput="S.q=this.value;rerenderList()"><br><br>
+  <div class="chips">${["Sab",...CLASSES].map(c=>`<button class="${S.cls===c?"on":""}" onclick="S.cls='${c}';render()">${c}</button>`).join("")}</div>
+  <div class="card list" id="sl">${L.map(s=>{const sib=mem.students.filter(x=>x.phone===s.phone).length;return `<div class="it" onclick="editStu('${s.id}')" style="cursor:pointer">${avatar(s)}<div class="sp"><b>${esc(s.name)}</b><div class="mut">${esc(s.cls)} · Roll ${esc(s.roll)} · ${esc(s.father)}${sib>1?' · <span class="tag t-warn">'+sib+' bhai/behan</span>':''}</div></div><div style="text-align:right"><b>${rs(netFee(s))}</b><div class="mut">mahana</div></div></div>`}).join("")||'<p class="mut">Koi student nahi.</p>'}</div>`;
+}
+function rerenderList(){const v=S.q;render();const i=document.querySelector('input[placeholder^="🔍"]');if(i){i.focus();i.setSelectionRange(v.length,v.length)}}
+let tmpPhoto="";
+function editStu(id){
+  const s=id?stu(id):{name:"",father:"",phone:"",cls:S.cls!=="Sab"?S.cls:"Class 1",roll:"",fee:"",discount:0,photo:""};tmpPhoto=s.photo||"";
+  modal(`<h3>${id?"Student edit":"Naya admission"}</h3>
+  <div class="row"><div class="av" id="pv" style="width:72px;height:72px">${tmpPhoto?'<img src="'+tmpPhoto+'">':"📷"}</div>
+  <label class="btn sec sm" style="color:var(--p);margin:0">Photo lagayein<input type="file" accept="image/*" style="display:none" onchange="pickPhoto(this)"></label></div>
+  <label>Student ka naam</label><input id="sn" value="${esc(s.name)}">
+  <label>Waalid ka naam</label><input id="sf" value="${esc(s.father)}">
+  <label>Waalid ka mobile (parents login isi se hoga)</label><input id="sp" inputmode="numeric" value="${esc(s.phone)}">
+  <div class="f2"><div><label>Class</label><select id="sc">${CLASSES.map(c=>`<option ${c===s.cls?"selected":""}>${c}</option>`).join("")}</select></div>
+  <div><label>Roll no.</label><input id="sr" value="${esc(s.roll)}"></div>
+  <div><label>Mahana fee</label><input id="sfe" inputmode="numeric" value="${esc(s.fee)}"></div>
+  <div><label>Riayat / Discount</label><input id="sd" inputmode="numeric" value="${esc(s.discount)}"></div></div><br>
+  <div class="row">${id?`<button class="btn bad sm" onclick="delStu('${id}')">Delete</button>`:""}<span class="sp"></span><button class="btn sec" onclick="closeModal()">Wapas</button><button class="btn" onclick="saveStu('${id||""}')">Save</button></div>`);
+}
+function pickPhoto(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const M=320,k=Math.min(1,M/Math.max(im.width,im.height));const c=document.createElement("canvas");c.width=im.width*k;c.height=im.height*k;c.getContext("2d").drawImage(im,0,0,c.width,c.height);tmpPhoto=c.toDataURL("image/jpeg",0.7);$("#pv").innerHTML='<img src="'+tmpPhoto+'">';toast("Photo chhoti ho gayi: "+Math.round(tmpPhoto.length*0.75/1024)+" KB")};im.src=r.result};r.readAsDataURL(f)}
+function saveStu(id){const d={name:$("#sn").value.trim(),father:$("#sf").value.trim(),phone:$("#sp").value.replace(/\D/g,""),cls:$("#sc").value,roll:$("#sr").value.trim(),fee:+$("#sfe").value||0,discount:+$("#sd").value||0,photo:tmpPhoto};
+  if(!d.name)return toast("Naam likhein");
+  if(id)Object.assign(stu(id),d);else mem.students.push({id:uid(),adm:today(),...d});save();closeModal();toast("Save ho gaya");render()}
+function delStu(id){ask("Ye student delete karein?",()=>{mem.students=mem.students.filter(s=>s.id!==id);mem.fees=mem.fees.filter(f=>f.sid!==id);save();render()})}
+
+/* ============ FEES ============ */
+function viewFees(){
+  const m=S.month,fs=mem.fees.filter(f=>f.month===m&&(S.cls==="Sab"||(stu(f.sid)||{}).cls===S.cls));
+  const paid=fs.filter(f=>f.status==="paid"),exp=fs.reduce((a,f)=>a+f.total,0),got=paid.reduce((a,f)=>a+f.total,0);
+  const months=[];const d=new Date();d.setDate(1);d.setMonth(d.getMonth()+1);for(let i=0;i<8;i++){months.push(ym(d));d.setMonth(d.getMonth()-1)}
+  return `<div class="row"><h2 class="sp">Fee Vouchers</h2><select style="width:auto" onchange="S.month=this.value;render()">${months.map(x=>`<option value="${x}" ${x===m?"selected":""}>${monthName(x)}</option>`).join("")}</select></div>
+  <div class="chips">${["Sab",...CLASSES].map(c=>`<button class="${S.cls===c?"on":""}" onclick="S.cls='${c}';render()">${c}</button>`).join("")}</div>
+  <div class="grid"><div class="stat"><div class="n">${fs.length}</div><div class="l">Voucher</div></div><div class="stat"><div class="n" style="color:var(--ok)">${rs(got)}</div><div class="l">Mili (${paid.length})</div></div><div class="stat"><div class="n" style="color:var(--bad)">${rs(exp-got)}</div><div class="l">Baqaya (${fs.length-paid.length})</div></div></div><br>
+  <div class="row"><button class="btn" onclick="genVouchers()">⚙️ ${monthName(m)} ke voucher banayein</button>${fs.length?`<button class="btn sec" onclick="printVouchers()">🖨️ Sab print</button>`:""}</div><br>
+  <div class="card list">${fs.map(f=>{const st=stu(f.sid);if(!st)return"";return `<div class="it">${avatar(st)}<div class="sp" onclick="showVoucher('${f.id}')" style="cursor:pointer"><b>${esc(st.name)}</b><div class="mut">${esc(st.cls)} · ${rs(f.total)}${f.arrears?' (baqaya '+rs(f.arrears)+' shamil)':''}</div></div>
+   ${f.status==="paid"?'<span class="tag t-ok">Paid</span>':f.status==="carried"?'<span class="tag t-warn">Agle voucher mein</span>':`<button class="btn ok sm" onclick="markPaid('${f.id}')">Paid</button>`}</div>`}).join("")||'<p class="mut">Abhi koi voucher nahi. Upar wala button dabayein.</p>'}</div>`;
+}
+function genVouchers(){
+  const m=S.month;let n=0;
+  mem.students.filter(s=>S.cls==="Sab"||s.cls===S.cls).forEach(st=>{
+    if(mem.fees.find(f=>f.sid===st.id&&f.month===m))return;
+    const prev=mem.fees.filter(f=>f.sid===st.id&&f.month<m&&f.status==="unpaid");
+    const arrears=prev.reduce((a,f)=>a+f.total,0);
+    prev.forEach(f=>f.status="carried");
+    mem.fees.push({id:uid(),sid:st.id,month:m,fee:+st.fee||0,discount:+st.discount||0,arrears,total:netFee(st)+arrears,status:"unpaid",no:++mem.rcpt});n++});
+  save();toast(n?n+" voucher ban gaye":"Voucher pehle se bane hue hain");render()}
+function markPaid(id){const f=mem.fees.find(x=>x.id===id);const late=today()>dueDate(f.month);
+  modal(`<h3>Fee wusool</h3><p>${esc(stu(f.sid).name)} · ${monthName(f.month)}</p><table><tr><td>Voucher raqam</td><td><b>${rs(f.total)}</b></td></tr>${late?`<tr><td>Late fine (due date guzar gayi)</td><td><b>${rs(mem.settings.fine)}</b></td></tr>`:""}</table>
+  ${late?`<label><input type="checkbox" id="fn" checked style="width:auto"> Late fine shamil karein</label>`:""}<br>
+  <div class="row"><button class="btn sec sp" onclick="closeModal()">Wapas</button><button class="btn ok sp" onclick="confirmPaid('${id}')">Wusool ho gayi ✅</button></div>`)}
+function confirmPaid(id){const f=mem.fees.find(x=>x.id===id);const fn=$("#fn");f.fine=fn&&fn.checked?+mem.settings.fine:0;f.status="paid";f.paidOn=today();save();closeModal();toast("Fee wusool. Receipt tayyar");render();showVoucher(id)}
+function voucherHTML(f,copy){const st=stu(f.sid),s=mem.settings,net=f.fee-f.discount;
+  return `<div class="vch"><div class="vh"><div><b>${esc(s.school)}</b><div>${esc(s.address)}</div><div>Ph: ${esc(s.phone)}</div></div><div style="text-align:right"><span class="copy">${copy}</span><div style="margin-top:4px">No. ${f.no}</div></div></div>
+  <table><tr><td>Naam</td><td><b>${esc(st.name)}</b></td><td>Roll</td><td>${esc(st.roll)}</td></tr><tr><td>Waalid</td><td>${esc(st.father)}</td><td>Class</td><td>${esc(st.cls)}</td></tr>
+  <tr><td>Mahina</td><td><b>${monthName(f.month)}</b></td><td>Akhri tareekh</td><td><b>${dueDate(f.month).split("-").reverse().join("-")}</b></td></tr></table>
+  <table style="margin-top:6px"><tr><td>Tuition fee</td><td style="text-align:right">${rs(f.fee)}</td></tr>${f.discount?`<tr><td>Riayat</td><td style="text-align:right">- ${rs(f.discount)}</td></tr>`:""}${f.arrears?`<tr><td>Pichla baqaya</td><td style="text-align:right">${rs(f.arrears)}</td></tr>`:""}${f.fine?`<tr><td>Late fine</td><td style="text-align:right">${rs(f.fine)}</td></tr>`:""}
+  <tr class="tot"><td>Kul raqam</td><td style="text-align:right">${rs(f.total+(f.fine||0))}</td></tr>${f.status!=="paid"?`<tr><td>Akhri tareekh ke baad</td><td style="text-align:right">${rs(f.total+ +s.fine)}</td></tr>`:""}</table>
+  <div style="margin-top:8px;display:flex;justify-content:space-between">${f.status==="paid"?`<b>✅ PAID · ${f.paidOn.split("-").reverse().join("-")}</b>`:"<span>Dastakhat: ____________</span>"}<span>Mohar</span></div></div>`}
+function showVoucher(id){const f=mem.fees.find(x=>x.id===id),st=stu(f.sid);
+  const msg=`*${mem.settings.school}*\n${f.status==="paid"?"Fee Receipt ✅":"Fee Voucher"} - ${monthName(f.month)}\nStudent: ${st.name} (${st.cls})\nRaqam: ${rs(f.total+(f.fine||0))}\n${f.status==="paid"?"Wusool: "+f.paidOn:"Akhri tareekh: "+dueDate(f.month)+"\nIs ke baad: "+rs(f.total+ +mem.settings.fine)}\nShukriya`;
+  modal(`<div class="vwrap">${voucherHTML(f,f.status==="paid"?"RECEIPT":"PARENT COPY")}</div><br>
+  <div class="row"><button class="btn sec" onclick="closeModal()">Band</button><span class="sp"></span><a class="btn ok" style="text-decoration:none" target="_blank" href="https://wa.me/${waNum(st.phone)}?text=${encodeURIComponent(msg)}">WhatsApp</a><button class="btn" onclick="printVouchers('${id}')">🖨️ Print</button></div>`)}
+function printVouchers(one){const fs=one?mem.fees.filter(f=>f.id===one):mem.fees.filter(f=>f.month===S.month&&(S.cls==="Sab"||(stu(f.sid)||{}).cls===S.cls));
+  $("#printArea").innerHTML=fs.filter(f=>stu(f.sid)).map(f=>`<div class="vwrap pbreak">${f.status==="paid"?voucherHTML(f,"RECEIPT"):["BANK COPY","SCHOOL COPY","PARENT COPY"].map(c=>voucherHTML(f,c)).join("")}</div>`).join("");
+  try{window.print()}catch(e){toast("Print yahan nahi chalta, asal link par chalega")}}
+
+/* ============ TEACHERS + ATTENDANCE (admin) ============ */
+function tch(id){return mem.teachers.find(t=>t.id===id)}
+function hm(t){return t?new Date(t).toLocaleTimeString("en-PK",{hour:"2-digit",minute:"2-digit"}):"-"}
+function viewTeach(){
+  const td=today();
+  return `<div class="row"><h2 class="sp">Teachers · Aaj ki haazri</h2><button class="btn" onclick="editT()">+ Teacher</button></div>
+  <div class="card list">${mem.teachers.map(t=>{const a=mem.tatt.find(x=>x.tid===t.id&&x.date===td);
+   return `<div class="it"><div class="av">${esc(t.name[0])}</div><div class="sp" onclick="editT('${t.id}')" style="cursor:pointer"><b>${esc(t.name)}</b><div class="mut">${esc(t.subject)} · Aaye: ${hm(a&&a.in)} · Gaye: ${hm(a&&a.out)}</div></div>
+   ${a?(a.late?'<span class="tag t-warn">Late</span>':'<span class="tag t-ok">Haazir</span>'):'<span class="tag t-bad">Ghair-haazir</span>'}</div>`}).join("")}</div>
+  <div class="card"><div class="row"><h3 class="sp" style="margin:0">Mahana report</h3><select style="width:auto" id="rm" onchange="repT()">${[0,1,2].map(i=>{const d=new Date();d.setDate(1);d.setMonth(d.getMonth()-i);return `<option value="${ym(d)}">${monthName(ym(d))}</option>`}).join("")}</select></div><div id="rep"></div></div>`;
+}
+function repT(){const m=$("#rm").value;const now=new Date();const [y,mm]=m.split("-").map(Number);const last=(y===now.getFullYear()&&mm===now.getMonth()+1)?now.getDate():new Date(y,mm,0).getDate();
+  let work=0;for(let d=1;d<=last;d++){if(new Date(y,mm-1,d).getDay()!==0)work++}
+  $("#rep").innerHTML=`<p class="mut">Kaam ke din (Itwaar chhor kar): ${work}</p><table><tr><th>Teacher</th><th>Haazir</th><th>Late</th><th>Ghair-haazir</th></tr>${mem.teachers.map(t=>{const a=mem.tatt.filter(x=>x.tid===t.id&&x.date.startsWith(m));const l=a.filter(x=>x.late).length;return `<tr><td>${esc(t.name)}</td><td>${a.length}</td><td>${l}</td><td>${Math.max(0,work-a.length)}</td></tr>`}).join("")}</table>`}
+function editT(id){const t=id?tch(id):{name:"",phone:"",subject:"",salary:"",pin:String(Math.floor(1000+Math.random()*9000))};
+  modal(`<h3>${id?"Teacher edit":"Naya teacher"}</h3><label>Naam</label><input id="tn" value="${esc(t.name)}"><label>Mobile (login isi se)</label><input id="tp" inputmode="numeric" value="${esc(t.phone)}">
+  <div class="f2"><div><label>Subject</label><input id="ts" value="${esc(t.subject)}"></div><div><label>Tankhwah</label><input id="tsal" inputmode="numeric" value="${esc(t.salary)}"></div></div>
+  <label>Login PIN</label><input id="tpin" inputmode="numeric" value="${esc(t.pin)}"><br><br>
+  <div class="row">${id?`<button class="btn bad sm" onclick="delT('${id}')">Delete</button>`:""}<span class="sp"></span><button class="btn sec" onclick="closeModal()">Wapas</button><button class="btn" onclick="saveT('${id||""}')">Save</button></div>`)}
+function saveT(id){const d={name:$("#tn").value.trim(),phone:$("#tp").value.replace(/\D/g,""),subject:$("#ts").value.trim(),salary:+$("#tsal").value||0,pin:$("#tpin").value.trim()};if(!d.name||!d.phone||!d.pin)return toast("Naam, mobile aur PIN zaroori");
+  if(id)Object.assign(tch(id),d);else mem.teachers.push({id:uid(),...d});save();closeModal();render()}
+function delT(id){ask("Ye teacher delete karein?",()=>{mem.teachers=mem.teachers.filter(t=>t.id!==id);save();render()})}
+
+/* ============ TEACHER CHECK-IN (QR + GPS) ============ */
+let scanner=null;
+function stopScan(){if(scanner){try{scanner.stop().catch(()=>{})}catch(e){}scanner=null}}
+function viewTCheck(){const t=tch(S.user.id);if(!t)return"";const a=mem.tatt.find(x=>x.tid===t.id&&x.date===today());
+  return `<div class="card" style="text-align:center"><h2>Assalam o Alaikum, ${esc(t.name)}</h2><p class="mut">${new Date().toLocaleDateString("en-PK",{weekday:"long",day:"numeric",month:"long"})}</p>
+  <div class="big">${a?(a.out?"🏠":"✅"):"⏰"}</div>
+  <p>${a?`Aap aaye: <b>${hm(a.in)}</b>${a.late?' <span class="tag t-warn">Late</span>':''}${a.out?`<br>Aap gaye: <b>${hm(a.out)}</b>`:""}`:"Aaj ki haazri abhi nahi lagi"}</p>
+  ${!a?`<button class="btn full ok" onclick="startCheck('in')">📷 QR scan karke Check-in</button>`:!a.out?`<button class="btn full" onclick="startCheck('out')">📷 QR scan karke Check-out</button>`:""}</div>
+  <div class="card"><h3>Is mahine</h3>${(()=>{const L=mem.tatt.filter(x=>x.tid===t.id&&x.date.startsWith(ym()));return `<p>Haazir: <b>${L.length}</b> din · Late: <b>${L.filter(x=>x.late).length}</b></p>`})()}</div>`}
+function startCheck(kind){
+  modal(`<h3>School ka QR code scan karein</h3><div id="reader"></div><p class="mut" id="gpsS">📍 Location check ho rahi hai...</p>
+  <details><summary class="mut">Camera nahi chal raha?</summary><label>QR ke neeche likha code</label><input id="mc"><br><br><button class="btn sm" onclick="gotCode($('#mc').value.trim(),'${kind}')">Check</button></details><br>
+  <button class="btn sec full" onclick="closeModal()">Wapas</button>`);
+  getPos();
+  try{scanner=new Html5Qrcode("reader");scanner.start({facingMode:"environment"},{fps:10,qrbox:220},txt=>{stopScan();gotCode(txt,kind)},()=>{}).catch(()=>{$("#reader").innerHTML='<p class="mut">Camera nahi khula. Neeche code likh dein.</p>'})}catch(e){$("#reader").innerHTML='<p class="mut">Camera nahi khula. Neeche code likh dein.</p>'}
+}
+let lastPos=null;
+function dist(a,b,c,d){const R=6371000,r=x=>x*Math.PI/180;const dl=r(c-a),dn=r(d-b);const h=Math.sin(dl/2)**2+Math.cos(r(a))*Math.cos(r(c))*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
+function getPos(cb){lastPos=null;if(!navigator.geolocation){const g=$("#gpsS");if(g)g.textContent="📍 Is phone par GPS nahi";return}
+  navigator.geolocation.getCurrentPosition(p=>{lastPos=p.coords;const g=$("#gpsS");if(g)g.textContent="📍 Location mil gayi ("+Math.round(p.coords.accuracy)+"m)";cb&&cb(p.coords)},()=>{const g=$("#gpsS");if(g)g.textContent="📍 Location nahi mili. Phone ki location ON karein.";cb&&cb(null)},{enableHighAccuracy:true,timeout:15000})}
+function gotCode(txt,kind){const s=mem.settings;
+  if(txt!==s.qr){toast("❌ Ye school ka QR nahi");return}
+  if(s.gpsOn){if(s.lat==null){toast("Admin ne abhi school ki location save nahi ki");}
+   else{if(!lastPos){toast("Location ka intezar... dobara koshish karein");getPos();return}
+    const d=dist(s.lat,s.lng,lastPos.latitude,lastPos.longitude);if(d>s.radius){toast("❌ Aap school se "+Math.round(d)+"m door hain");return}}}
+  const td=today(),now=new Date();let a=mem.tatt.find(x=>x.tid===S.user.id&&x.date===td);
+  if(kind==="in"&&!a){const [h,m]=s.start.split(":").map(Number);const lim=new Date();lim.setHours(h,m+ +s.grace,0,0);mem.tatt.push({id:uid(),tid:S.user.id,date:td,in:now.toISOString(),late:now>lim})}
+  else if(kind==="out"&&a){a.out=now.toISOString()}
+  save();closeModal();toast("✅ Haazri lag gayi");render()}
+
+/* ============ SETTINGS ============ */
+function viewSet(){const s=mem.settings;
+  return `<h2>Settings</h2>
+  <div class="card"><h3>School</h3><label>Naam</label><input id="s1" value="${esc(s.school)}"><label>Pata</label><input id="s2" value="${esc(s.address)}"><label>Phone</label><input id="s3" value="${esc(s.phone)}">
+  <div class="f2"><div><label>Fee ki akhri tareekh (har mahine)</label><input id="s4" inputmode="numeric" value="${s.dueDay}"></div><div><label>Late fine (Rs)</label><input id="s5" inputmode="numeric" value="${s.fine}"></div>
+  <div><label>School ka waqt</label><input id="s6" type="time" value="${s.start}"></div><div><label>Late ki chhoot (minute)</label><input id="s7" inputmode="numeric" value="${s.grace}"></div></div><br>
+  <button class="btn" onclick="saveSet()">Save</button></div>
+  <div class="card"><h3>Teacher haazri: QR + GPS</h3>
+  <p class="mut">1) School mein khare hokar "Location save" dabayein. 2) QR print karke office mein laga dein.</p>
+  <p>Location: <b>${s.lat!=null?s.lat.toFixed(5)+", "+s.lng.toFixed(5):"Abhi save nahi"}</b></p>
+  <div class="f2"><div><label>Daira (meter)</label><input id="s8" inputmode="numeric" value="${s.radius}"></div><div><label>GPS check</label><select id="s9"><option value="1" ${s.gpsOn?"selected":""}>ON</option><option value="0" ${!s.gpsOn?"selected":""}>OFF</option></select></div></div><br>
+  <div class="row"><button class="btn sec" onclick="saveLoc()">📍 Abhi ki location save</button><button class="btn sec" onclick="saveSet()">Save</button></div><br>
+  <div style="text-align:center"><div id="qrBox" style="display:inline-block;padding:10px;background:#fff"></div><div><b>${esc(s.qr)}</b></div><br><button class="btn" onclick="printQR()">🖨️ QR print</button></div></div>
+  <div class="card"><h3>Admin login</h3><div class="f2"><div><label>User</label><input id="a1" value="${esc(s.adminUser)}"></div><div><label>PIN</label><input id="a2" value="${esc(s.adminPin)}"></div></div><br><button class="btn" onclick="saveSet()">Save</button></div>
+  <div class="card"><button class="btn sec" onclick="logout()">Logout</button> <button class="btn bad" onclick="ask('Saara demo data mita kar naya shuru karein?',()=>{mem=seed();save();render()})">Demo reset</button></div>`}
+function saveSet(){const s=mem.settings;s.school=$("#s1").value;s.address=$("#s2").value;s.phone=$("#s3").value;s.dueDay=Math.min(28,Math.max(1,+$("#s4").value||10));s.fine=+$("#s5").value||0;s.start=$("#s6").value||"08:00";s.grace=+$("#s7").value||0;s.radius=+$("#s8").value||150;s.gpsOn=$("#s9").value==="1";s.adminUser=$("#a1").value.trim()||"admin";s.adminPin=$("#a2").value.trim()||"1234";save();toast("Save ho gaya");render()}
+function saveLoc(){toast("Location le raha hoon...");getPos(c=>{if(!c)return toast("Location nahi mili. Phone ki location ON karein");mem.settings.lat=c.latitude;mem.settings.lng=c.longitude;save();toast("School ki location save ✅");render()})}
+function drawQR(el,size){try{new QRCode(el,{text:mem.settings.qr,width:size,height:size})}catch(e){el.textContent="QR"}}
+function printQR(){const p=$("#printArea");p.innerHTML=`<div style="text-align:center;padding-top:60px;font-family:sans-serif"><h1>${esc(mem.settings.school)}</h1><h2>Teacher Haazri</h2><div id="pq" style="display:inline-block"></div><p style="font-size:20px">${esc(mem.settings.qr)}</p><p>App kholein → Check-in → Ye QR scan karein</p></div>`;drawQR($("#pq"),320);setTimeout(()=>{try{window.print()}catch(e){toast("Print yahan nahi chalta, asal link par chalega")}},300)}
+
+/* ============ RENDER ============ */
+function go(t){S.tab=t;S.q="";render();window.scrollTo(0,0)}
+function render(){
+  const app=$("#app");
+  if(!S.user){app.innerHTML=`<header><div><h1>🏫 School Manager</h1><small>Demo</small></div></header><main>${viewLogin()}</main>`;lt("a");return}
+  const admin=S.user.role==="admin";
+  const tabs=admin?[["dash","🏠","Home"],["stu","🎒","Students"],["fees","🧾","Fee"],["teach","👩‍🏫","Teachers"],["set","⚙️","Settings"]]:[["tcheck","✅","Haazri"]];
+  const v={dash:viewDash,stu:viewStudents,fees:viewFees,teach:viewTeach,set:viewSet,tcheck:viewTCheck}[S.tab]||viewDash;
+  app.innerHTML=`<header><div><h1>🏫 ${esc(mem.settings.school)}</h1><small>${admin?"Admin":"Teacher"} · Demo</small></div>${!admin?'<button class="btn sec sm" onclick="logout()">Logout</button>':''}</header><main>${v()}</main>
+  ${tabs.length>1?`<nav>${tabs.map(t=>`<button class="${S.tab===t[0]?"on":""}" onclick="go('${t[0]}')"><b>${t[1]}</b>${t[2]}</button>`).join("")}</nav>`:""}`;
+  if(S.tab==="teach")repT();
+  if(S.tab==="set")drawQR($("#qrBox"),180);
+}
+render();
+</script>
+</body>
+</html>
