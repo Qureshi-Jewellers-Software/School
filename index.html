@@ -129,7 +129,7 @@ function nextCode(pre,list){let n=pre==="S"?1000:100;list.forEach(x=>{const k=pa
 (function(){let ch=0;mem.students.forEach(s=>{if(!s.code){s.code=nextCode("S",mem.students);ch=1}});mem.teachers.forEach(t=>{if(!t.code){t.code=nextCode("T",mem.teachers);ch=1}});if(ch)save()})();
 if(mem.settings.adminUser==="admin"){mem.settings.adminUser="Admin";save()}
 let S={user:null,tab:"dash",cls:"Sab",month:ym(),q:""};
-try{const u=sessionStorage.getItem("school_user");if(u)S.user=JSON.parse(u)}catch(e){}
+try{const u=localStorage.getItem("school_user");if(u)S.user=JSON.parse(u)}catch(e){}
 
 /* ============ HELPERS ============ */
 const $=s=>document.querySelector(s);
@@ -157,9 +157,9 @@ function eye(b){const i=b.previousElementSibling;const sh=i.type==="password";i.
 function doLogin(k){const u=$("#lu").value.trim(),p=$("#lp").value.trim();
   if(k==="a"){if(u===mem.settings.adminUser&&p===mem.settings.adminPin){S.user={role:"admin"}}else return toast("Ghalat user ya PIN")}
   else{const t=mem.teachers.find(t=>t.phone===u&&t.pin===p);if(!t)return toast("Ghalat number ya PIN");S.user={role:"teacher",id:t.id}}
-  try{sessionStorage.setItem("school_user",JSON.stringify(S.user))}catch(e){}
+  try{localStorage.setItem("school_user",JSON.stringify(S.user))}catch(e){}
   S.tab=S.user.role==="admin"?"dash":"tcheck";render()}
-function logout(){S.user=null;try{sessionStorage.removeItem("school_user")}catch(e){}render()}
+function logout(){S.user=null;try{localStorage.removeItem("school_user")}catch(e){}render()}
 
 /* ============ DASHBOARD ============ */
 function viewDash(){
