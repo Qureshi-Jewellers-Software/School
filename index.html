@@ -94,11 +94,12 @@ function seed(){
   ["Ayesha Khan","Imran Khan","03111222333","Class 8",4000],["Usman Ahmed","Tariq Ahmed","03214445566","Class 10",4500],["Zainab Bibi","Abdul Ghani","03337778899","Prep (KG)",2500],["Bilal Hussain","Akhtar Hussain","03451112223","Class 5",3500]];
   const students=s.map((x,i)=>({id:uid(),name:x[0],father:x[1],phone:x[2],cls:x[3],roll:String(i+1),fee:x[4],discount:x[1]==="Muhammad Raza"&&i>0?300:0,photo:"",adm:today()}));
   const teachers=[{id:uid(),name:"Sana Malik",phone:"03009990001",subject:"English",salary:25000,pin:"1111"},{id:uid(),name:"Kashif Iqbal",phone:"03009990002",subject:"Maths",salary:28000,pin:"2222"},{id:uid(),name:"Nadia Parveen",phone:"03009990003",subject:"Urdu",salary:22000,pin:"3333"}];
-  return {settings:{school:"Demo School",address:"Main Road, Karachi",phone:"0300-0000000",dueDay:10,fine:200,start:"08:00",grace:10,lat:null,lng:null,radius:150,qr:"SCH-"+uid().toUpperCase(),gpsOn:true,adminUser:"admin",adminPin:"1234"},students,teachers,fees:[],tatt:[],rcpt:1000};
+  return {settings:{school:"Demo School",address:"Main Road, Karachi",phone:"0300-0000000",dueDay:10,fine:200,start:"08:00",grace:10,lat:null,lng:null,radius:150,qr:"SCH-"+uid().toUpperCase(),gpsOn:true,adminUser:"Admin",adminPin:"1234"},students,teachers,fees:[],tatt:[],rcpt:1000};
 }
 function load(){try{const t=localStorage.getItem(KEY);if(t){mem=JSON.parse(t);return}}catch(e){}mem=seed();save()}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(mem))}catch(e){}}
 load();
+if(mem.settings.adminUser==="admin"){mem.settings.adminUser="Admin";save()}
 let S={user:null,tab:"dash",cls:"Sab",month:ym(),q:""};
 try{const u=sessionStorage.getItem("school_user");if(u)S.user=JSON.parse(u)}catch(e){}
 
@@ -119,7 +120,7 @@ function viewLogin(){
   return `<div class="login"><div class="card"><h2 style="text-align:center">🏫 ${esc(mem.settings.school)}</h2>
   <div class="chips" style="justify-content:center"><button class="on" id="lA" onclick="lt('a')">Admin / Office</button><button id="lT" onclick="lt('t')">Teacher</button></div>
   <div id="lf"></div></div>
-  <p class="mut" style="text-align:center">Demo: Admin <b>admin</b> / PIN <b>1234</b><br>Teacher: 03009990001 / PIN 1111</p></div>`;
+  </div>`;
 }
 function lt(k){$("#lA").classList.toggle("on",k==="a");$("#lT").classList.toggle("on",k==="t");
   $("#lf").innerHTML=k==="a"?`<label>User</label><input id="lu" value=""><label>PIN</label><div class="pw"><input id="lp" type="password" inputmode="numeric"><button type="button" class="eye" onclick="eye(this)">👁️</button></div><br><br><button class="btn full" onclick="doLogin('a')">Login</button>`
@@ -296,7 +297,7 @@ function viewSet(){const s=mem.settings;
   <div style="text-align:center"><div id="qrBox" style="display:inline-block;padding:10px;background:#fff"></div><div><b>${esc(s.qr)}</b></div><br><button class="btn" onclick="printQR()">🖨️ QR print</button></div></div>
   <div class="card"><h3>Admin login</h3><div class="f2"><div><label>User</label><input id="a1" value="${esc(s.adminUser)}"></div><div><label>PIN</label><input id="a2" value="${esc(s.adminPin)}"></div></div><br><button class="btn" onclick="saveSet()">Save</button></div>
   <div class="card"><button class="btn sec" onclick="logout()">Logout</button> <button class="btn bad" onclick="ask('Saara demo data mita kar naya shuru karein?',()=>{mem=seed();save();render()})">Demo reset</button></div>`}
-function saveSet(){const s=mem.settings;s.school=$("#s1").value;s.address=$("#s2").value;s.phone=$("#s3").value;s.dueDay=Math.min(28,Math.max(1,+$("#s4").value||10));s.fine=+$("#s5").value||0;s.start=$("#s6").value||"08:00";s.grace=+$("#s7").value||0;s.radius=+$("#s8").value||150;s.gpsOn=$("#s9").value==="1";s.adminUser=$("#a1").value.trim()||"admin";s.adminPin=$("#a2").value.trim()||"1234";save();toast("Save ho gaya");render()}
+function saveSet(){const s=mem.settings;s.school=$("#s1").value;s.address=$("#s2").value;s.phone=$("#s3").value;s.dueDay=Math.min(28,Math.max(1,+$("#s4").value||10));s.fine=+$("#s5").value||0;s.start=$("#s6").value||"08:00";s.grace=+$("#s7").value||0;s.radius=+$("#s8").value||150;s.gpsOn=$("#s9").value==="1";s.adminUser=$("#a1").value.trim()||"Admin";s.adminPin=$("#a2").value.trim()||"1234";save();toast("Save ho gaya");render()}
 function saveLoc(){toast("Location le raha hoon...");getPos(c=>{if(!c)return toast("Location nahi mili. Phone ki location ON karein");mem.settings.lat=c.latitude;mem.settings.lng=c.longitude;save();toast("School ki location save ✅");render()})}
 function drawQR(el,size){try{new QRCode(el,{text:mem.settings.qr,width:size,height:size})}catch(e){el.textContent="QR"}}
 function printQR(){const p=$("#printArea");p.innerHTML=`<div style="text-align:center;padding-top:60px;font-family:sans-serif"><h1>${esc(mem.settings.school)}</h1><h2>Teacher Haazri</h2><div id="pq" style="display:inline-block"></div><p style="font-size:20px">${esc(mem.settings.qr)}</p><p>App kholein → Check-in → Ye QR scan karein</p></div>`;drawQR($("#pq"),320);setTimeout(()=>{try{window.print()}catch(e){toast("Print yahan nahi chalta, asal link par chalega")}},300)}
