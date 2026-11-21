@@ -120,7 +120,7 @@ function viewLogin(){
   return `<div class="login"><div class="card"><h2 style="text-align:center">🏫 ${esc(mem.settings.school)}</h2>
   <div class="chips" style="justify-content:center"><button class="on" id="lA" onclick="lt('a')">Admin / Office</button><button id="lT" onclick="lt('t')">Teacher</button></div>
   <div id="lf"></div></div>
-  </div>`;
+  <p class="mut" style="text-align:center">Demo Teacher: 03009990001 / PIN 1111</p></div>`;
 }
 function lt(k){$("#lA").classList.toggle("on",k==="a");$("#lT").classList.toggle("on",k==="t");
   $("#lf").innerHTML=k==="a"?`<label>User</label><input id="lu" value=""><label>PIN</label><div class="pw"><input id="lp" type="password" inputmode="numeric"><button type="button" class="eye" onclick="eye(this)">👁️</button></div><br><br><button class="btn full" onclick="doLogin('a')">Login</button>`
