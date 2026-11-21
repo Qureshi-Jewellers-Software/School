@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light only">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&family=Noto+Naskh+Arabic:wght@400;700&display=swap">
 <title>School Manager (Demo)</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
@@ -63,6 +64,13 @@ label{font-size:12px;color:var(--mut);display:block;margin:8px 0 3px}
 .cdd .clist button{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--bd);background:#fff;padding:11px 14px;font-size:15px;cursor:pointer;color:var(--tx)}
 .cdd .clist button:last-child{border-bottom:0}
 .cdd .clist button.on{background:var(--p2);color:var(--p);font-weight:700}
+body.ur{font-family:"Noto Nastaliq Urdu","Noto Naskh Arabic",system-ui,sans-serif;line-height:1.9}
+body.ur input,body.ur select,body.ur button{font-family:inherit}
+body.ur .idc,body.ur .vch{font-family:"Noto Naskh Arabic",Arial,sans-serif;line-height:1.25}
+body.ur .chips,body.ur nav button{line-height:1.6}
+.lsel{width:auto;padding:5px 6px;font-size:13px;border-radius:7px;border:0;background:rgba(255,255,255,.95) !important}
+input[inputmode=numeric],input[type=time]{direction:ltr}
+body.ur input[inputmode=numeric]{text-align:right}
 table{width:100%;border-collapse:collapse;font-size:14px}
 td,th{padding:7px 6px;border-bottom:1px solid var(--bd);text-align:left}
 .big{font-size:44px;text-align:center;margin:6px 0}
@@ -208,7 +216,7 @@ function editStu(id){
   <label class="btn sec sm" style="color:var(--p);margin:0">Photo lagayein<input type="file" accept="image/*" style="display:none" onchange="pickPhoto(this)"></label></div>
   <label>Student ka naam</label><input id="sn" value="${esc(s.name)}">
   <label>Waalid ka naam</label><input id="sf" value="${esc(s.father)}">
-  <label>Waalid ka mobile (parents login isi se hoga)</label><input id="sp" inputmode="numeric" value="${esc(s.phone)}">
+  <label>Waalid ka mobile (parents login isi se hoga)</label><input id="sp" inputmode="numeric" value="<bdi dir="ltr">${esc(s.phone)}</bdi>">
   <div class="f2"><div><label>Class</label><select id="sc">${CLASSES.map(c=>`<option ${c===s.cls?"selected":""}>${c}</option>`).join("")}</select></div>
   <div><label>Roll no.</label><input id="sr" value="${esc(s.roll)}"></div>
   <div><label>Mahana fee</label><input id="sfe" inputmode="numeric" value="${esc(s.fee)}"></div>
@@ -249,7 +257,7 @@ function markPaid(id){const f=mem.fees.find(x=>x.id===id);const late=today()>due
   <div class="row"><button class="btn sec sp" onclick="closeModal()">Wapas</button><button class="btn ok sp" onclick="confirmPaid('${id}')">Wusool ho gayi ✅</button></div>`)}
 function confirmPaid(id){const f=mem.fees.find(x=>x.id===id);const fn=$("#fn");f.fine=fn&&fn.checked?+mem.settings.fine:0;f.status="paid";f.paidOn=today();save();closeModal();toast("Fee wusool. Receipt tayyar");render();showVoucher(id)}
 function voucherHTML(f,copy){const st=stu(f.sid),s=mem.settings,net=f.fee-f.discount;
-  return `<div class="vch"><div class="vh"><div><b>${esc(s.school)}</b><div>${esc(s.address)}</div><div>Ph: ${esc(s.phone)}</div></div><div style="text-align:right"><span class="copy">${copy}</span><div style="margin-top:4px">No. ${f.no}</div></div></div>
+  return `<div class="vch"><div class="vh"><div><b>${esc(s.school)}</b><div>${esc(s.address)}</div><div>Ph: <bdi dir="ltr">${esc(s.phone)}</bdi></div></div><div style="text-align:right"><span class="copy">${copy}</span><div style="margin-top:4px">No. ${f.no}</div></div></div>
   <table><tr><td>Naam</td><td><b>${esc(st.name)}</b></td><td>Roll</td><td>${esc(st.roll)}</td></tr><tr><td>Waalid</td><td>${esc(st.father)}</td><td>Class</td><td>${esc(st.cls)}</td></tr>
   <tr><td>Mahina</td><td><b>${monthName(f.month)}</b></td><td>Akhri tareekh</td><td><b>${dueDate(f.month).split("-").reverse().join("-")}</b></td></tr></table>
   <table style="margin-top:6px"><tr><td>Tuition fee</td><td style="text-align:right">${rs(f.fee)}</td></tr>${f.discount?`<tr><td>Riayat</td><td style="text-align:right">- ${rs(f.discount)}</td></tr>`:""}${f.arrears?`<tr><td>Pichla baqaya</td><td style="text-align:right">${rs(f.arrears)}</td></tr>`:""}${f.fine?`<tr><td>Late fine</td><td style="text-align:right">${rs(f.fine)}</td></tr>`:""}
@@ -293,11 +301,11 @@ function delT(id){ask("Ye teacher delete karein?",()=>{mem.teachers=mem.teachers
 
 /* ============ ID CARDS ============ */
 function cardHTML(kind,x){const s=mem.settings,isT=kind==="t";
-  const rows=isT?`<div class="nm">${esc(x.name)}</div><div>Subject: <b>${esc(x.subject||"-")}</b></div><div>Mobile: <b>${esc(x.phone)}</b></div><div>ID: <b>${esc(x.code)}</b></div>`
-   :`<div class="nm">${esc(x.name)}</div><div>Waalid: <b>${esc(x.father||"-")}</b></div><div>Class: <b>${esc(x.cls)}</b> · Roll: <b>${esc(x.roll||"-")}</b></div><div>Parents: <b>${esc(x.phone||"-")}</b></div>`;
+  const rows=isT?`<div class="nm">${esc(x.name)}</div><div>Subject: <b>${esc(x.subject||"-")}</b></div><div>Mobile: <b><bdi dir="ltr">${esc(x.phone)}</bdi></b></div><div>ID: <b>${esc(x.code)}</b></div>`
+   :`<div class="nm">${esc(x.name)}</div><div>Waalid: <b>${esc(x.father||"-")}</b></div><div>Class: <b>${esc(x.cls)}</b> · Roll: <b>${esc(x.roll||"-")}</b></div><div>Parents: <b><bdi dir="ltr">${esc(x.phone||"-")}</bdi></b></div>`;
   return `<div class="idc ${isT?"tc":""}"><div class="ih"><b>${esc(s.school)}</b><span>${isT?"TEACHER":"STUDENT"}</span></div>
   <div class="ib"><div class="ip">${x.photo?'<img src="'+x.photo+'">':esc((x.name||"?")[0])}</div><div class="id">${rows}<div>Blood: <span class="bg">${esc(x.blood||"-")}</span></div></div></div>
-  <div class="bcw"><svg class="bc" data-v="${esc(x.code)}"></svg></div><div class="ft">${esc(s.address)} · ${esc(s.phone)}</div></div>`}
+  <div class="bcw"><svg class="bc" data-v="${esc(x.code)}"></svg></div><div class="ft">${esc(s.address)} · <bdi dir="ltr">${esc(s.phone)}</bdi></div></div>`}
 function drawBarcodes(root){root.querySelectorAll("svg.bc").forEach(el=>{try{JsBarcode(el,el.dataset.v,{format:"CODE128",height:32,width:1.6,fontSize:12,margin:0,displayValue:true})}catch(e){el.outerHTML='<div style="font-size:3mm;font-weight:700">'+esc(el.dataset.v)+'</div>'}})}
 let cardSel=null;
 function showCards(kind,ids){const L=ids.map(id=>kind==="t"?tch(id):stu(id)).filter(Boolean);if(!L.length)return toast("Koi record nahi");cardSel={kind,ids};
@@ -313,7 +321,7 @@ function printCards(){const {kind,ids}=cardSel;const L=ids.map(id=>kind==="t"?tc
 let scanner=null;
 function stopScan(){if(scanner){try{scanner.stop().catch(()=>{})}catch(e){}scanner=null}}
 function viewTCheck(){const t=tch(S.user.id);if(!t)return"";const a=mem.tatt.find(x=>x.tid===t.id&&x.date===today());
-  return `<div class="card" style="text-align:center"><h2>Assalam o Alaikum, ${esc(t.name)}</h2><p class="mut">${new Date().toLocaleDateString("en-PK",{weekday:"long",day:"numeric",month:"long"})}</p>
+  return `<div class="card" style="text-align:center"><h2>Assalam o Alaikum, ${esc(t.name)}</h2><p class="mut">${new Date().toLocaleDateString(LANG==="ur"?"ur-PK":"en-PK",{weekday:"long",day:"numeric",month:"long"})}</p>
   <div class="big">${a?(a.out?"🏠":"✅"):"⏰"}</div>
   <p>${a?`Aap aaye: <b>${hm(a.in)}</b>${a.late?' <span class="tag t-warn">Late</span>':''}${a.out?`<br>Aap gaye: <b>${hm(a.out)}</b>`:""}`:"Aaj ki haazri abhi nahi lagi"}</p>
   ${!a?`<button class="btn full ok" onclick="startCheck('in')">📷 QR scan karke Check-in</button>`:!a.out?`<button class="btn full" onclick="startCheck('out')">📷 QR scan karke Check-out</button>`:""}</div>
@@ -342,7 +350,7 @@ function gotCode(txt,kind){const s=mem.settings;
 /* ============ SETTINGS ============ */
 function viewSet(){const s=mem.settings;
   return `<h2>Settings</h2>
-  <div class="card"><h3>School</h3><label>Naam</label><input id="s1" value="${esc(s.school)}"><label>Pata</label><input id="s2" value="${esc(s.address)}"><label>Phone</label><input id="s3" value="${esc(s.phone)}">
+  <div class="card"><h3>School</h3><label>Naam</label><input id="s1" value="${esc(s.school)}"><label>Pata</label><input id="s2" value="${esc(s.address)}"><label>Phone</label><input id="s3" value="<bdi dir="ltr">${esc(s.phone)}</bdi>">
   <div class="f2"><div><label>Fee ki akhri tareekh (har mahine)</label><input id="s4" inputmode="numeric" value="${s.dueDay}"></div><div><label>Late fine (Rs)</label><input id="s5" inputmode="numeric" value="${s.fine}"></div>
   <div><label>School ka waqt</label><input id="s6" type="time" value="${s.start}"></div><div><label>Late ki chhoot (minute)</label><input id="s7" inputmode="numeric" value="${s.grace}"></div></div><br>
   <button class="btn" onclick="saveSet()">Save</button></div>
@@ -359,18 +367,93 @@ function saveLoc(){toast("Location le raha hoon...");getPos(c=>{if(!c)return toa
 function drawQR(el,size){try{new QRCode(el,{text:mem.settings.qr,width:size,height:size})}catch(e){el.textContent="QR"}}
 function printQR(){const p=$("#printArea");p.innerHTML=`<div style="text-align:center;padding-top:60px;font-family:sans-serif"><h1>${esc(mem.settings.school)}</h1><h2>Teacher Haazri</h2><div id="pq" style="display:inline-block"></div><p style="font-size:20px">${esc(mem.settings.qr)}</p><p>App kholein → Check-in → Ye QR scan karein</p></div>`;drawQR($("#pq"),320);setTimeout(()=>{try{window.print()}catch(e){toast("Print yahan nahi chalta, asal link par chalega")}},300)}
 
+/* ============ LANGUAGE (Roman Urdu / اردو / English) ============ */
+let LANG="ru";try{LANG=localStorage.getItem("school_lang")||"ru"}catch(e){}
+// EXACT: poora text match ho to
+const TX_EXACT={
+"School":["اسکول","School"],"Demo":["ڈیمو","Demo"],"Teacher":["ٹیچر","Teacher"],"Haazri":["حاضری","Attendance"],"Home":["ہوم","Home"],"Settings":["سیٹنگز","Settings"],
+"Detail":["تفصیل","Details"],"Save":["محفوظ کریں","Save"],"Delete":["حذف کریں","Delete"],"Login":["لاگ ان","Login"],"Logout":["لاگ آؤٹ","Logout"],"User":["یوزر","User"],"PIN":["پن","PIN"],
+"ON":["آن","ON"],"OFF":["آف","OFF"],"Check":["چیک کریں","Check"],"Haan":["ہاں","Yes"],"Nahi":["نہیں","No"],"Band":["بند کریں","Close"],"Wapas":["واپس","Back"],"Card":["کارڈ","Card"],
+"Voucher":["واؤچر","Vouchers"],"Mohar":["مہر","Stamp"],"Mahina":["مہینہ","Month"],"Roll":["رول","Roll"],"Paid":["ادا شدہ","Paid"],"Pata":["پتہ","Address"],"Phone":["فون","Phone"],
+"Subject":["مضمون","Subject"],"Tankhwah":["تنخواہ","Salary"],"Naam":["نام","Name"],"Waalid":["والد","Father"],"mahana":["ماہانہ","monthly"],"Location:":["لوکیشن:","Location:"],
+"STUDENT":["طالب علم","STUDENT"],"TEACHER":["ٹیچر","TEACHER"],"RECEIPT":["رسید","RECEIPT"],"BANK COPY":["بینک کاپی","BANK COPY"],"SCHOOL COPY":["اسکول کاپی","SCHOOL COPY"],"PARENT COPY":["والدین کاپی","PARENT COPY"],
+"Fee":["فیس","Fee"],"Late":["لیٹ","Late"],"Haazir":["حاضر","Present"],"Class":["کلاس","Class"]
+};
+// PHRASE: text ke andar jahan bhi aaye
+const TX_PHRASE={
+"Assalam o Alaikum":["السلام علیکم","Welcome"],"Kul students":["کل طلبہ","Total students"],"fee mili":["فیس وصول","fee received"],"Baqaya":["بقایا","Pending"],
+"Aaj teachers ki haazri":["آج ٹیچرز کی حاضری","Teachers' attendance today"],"Ghair-haazir":["غیر حاضر","Absent"],"Haazir":["حاضر","Present"],
+"Fee baqaya":["فیس بقایا","Fee pending"],"Is mahine ke voucher abhi nahi bane.":["اس مہینے کے واؤچر ابھی نہیں بنے۔","This month's vouchers are not made yet."],
+"Voucher banayein":["واؤچر بنائیں","Make vouchers"],"Sab ne fee de di":["سب نے فیس دے دی","Everyone has paid"],
+"Naya admission":["نیا داخلہ","New admission"],"Naam ya number se dhoondein":["نام یا نمبر سے تلاش کریں","Search by name or number"],"Sab classes":["تمام کلاسیں","All classes"],
+"Sab students":["تمام طلبہ","All students"],"ke card print":["کے کارڈ پرنٹ","cards print"],"Saare teachers ke card print":["تمام ٹیچرز کے کارڈ پرنٹ","Print all teacher cards"],
+"bhai/behan":["بہن بھائی","siblings"],"Koi student nahi.":["کوئی طالب علم نہیں۔","No students."],"Student edit":["طالب علم میں تبدیلی","Edit student"],
+"Photo lagayein":["تصویر لگائیں","Add photo"],"Student ka naam":["طالب علم کا نام","Student name"],"Waalid ka naam":["والد کا نام","Father's name"],
+"Waalid ka mobile (parents login isi se hoga)":["والد کا موبائل (والدین کا لاگ ان اسی سے ہوگا)","Father's mobile (parents login with this)"],
+"Roll no.":["رول نمبر","Roll no."],"Mahana fee":["ماہانہ فیس","Monthly fee"],"Riayat / Discount":["رعایت","Discount"],"Blood group":["بلڈ گروپ","Blood group"],"Pata nahi":["معلوم نہیں","Unknown"],
+"Fee Vouchers":["فیس واؤچر","Fee Vouchers"],"ke voucher banayein":["کے واؤچر بنائیں","make vouchers"],"Sab print":["سب پرنٹ","Print all"],"Mili":["وصول","Received"],
+"Abhi koi voucher nahi. Upar wala button dabayein.":["ابھی کوئی واؤچر نہیں۔ اوپر والا بٹن دبائیں۔","No vouchers yet. Press the button above."],
+"baqaya":["بقایا","arrears"],"shamil":["شامل","included"],"Agle voucher mein":["اگلے واؤچر میں","Moved to next voucher"],"voucher ban gaye":["واؤچر بن گئے","vouchers made"],
+"Voucher pehle se bane hue hain":["واؤچر پہلے سے بنے ہوئے ہیں","Vouchers already made"],"Fee wusool. Receipt tayyar":["فیس وصول۔ رسید تیار","Fee received. Receipt ready"],
+"Fee wusool":["فیس وصولی","Receive fee"],"Voucher raqam":["واؤچر رقم","Voucher amount"],"Late fine (due date guzar gayi)":["لیٹ جرمانہ (آخری تاریخ گزر گئی)","Late fine (due date passed)"],
+"Late fine shamil karein":["لیٹ جرمانہ شامل کریں","Add late fine"],"Wusool ho gayi":["وصول ہو گئی","Received"],"Late fine (Rs)":["لیٹ جرمانہ (روپے)","Late fine (Rs)"],"Late fine":["لیٹ جرمانہ","Late fine"],
+"Akhri tareekh ke baad":["آخری تاریخ کے بعد","After due date"],"Akhri tareekh":["آخری تاریخ","Due date"],"Tuition fee":["ٹیوشن فیس","Tuition fee"],"Pichla baqaya":["پچھلا بقایا","Previous arrears"],
+"Riayat":["رعایت","Discount"],"Kul raqam":["کل رقم","Total"],"Dastakhat":["دستخط","Signature"],"Waalid:":["والد:","Father:"],"Parents:":["والدین:","Parents:"],"Blood:":["بلڈ:","Blood:"],"Mobile:":["موبائل:","Mobile:"],"Subject:":["مضمون:","Subject:"],
+"Ek A4 page par 10 card print honge. Kaat kar laminate kar lein.":["ایک A4 صفحے پر 10 کارڈ پرنٹ ہوں گے۔ کاٹ کر لیمینیٹ کر لیں۔","10 cards print on one A4 page. Cut and laminate."],
+"...aur":["...اور","...and"],"Koi record nahi":["کوئی ریکارڈ نہیں","No record"],
+"Teachers · Aaj ki haazri":["ٹیچرز · آج کی حاضری","Teachers · Today's attendance"],"Aaye:":["آئے:","In:"],"Gaye:":["گئے:","Out:"],"Mahana report":["ماہانہ رپورٹ","Monthly report"],
+"Kaam ke din (Itwaar chhor kar)":["کام کے دن (اتوار کے علاوہ)","Working days (except Sunday)"],"Naya teacher":["نیا ٹیچر","New teacher"],"Teacher edit":["ٹیچر میں تبدیلی","Edit teacher"],
+"Mobile (login isi se)":["موبائل (لاگ ان اسی سے)","Mobile (used for login)"],"Login PIN":["لاگ ان پن","Login PIN"],"Mobile number":["موبائل نمبر","Mobile number"],
+"Admin / Office":["ایڈمن / آفس","Admin / Office"],"Demo Teacher":["ڈیمو ٹیچر","Demo Teacher"],"Ghalat user ya PIN":["غلط یوزر یا پن","Wrong user or PIN"],"Ghalat number ya PIN":["غلط نمبر یا پن","Wrong number or PIN"],
+"Aaj ki haazri abhi nahi lagi":["آج کی حاضری ابھی نہیں لگی","Today's attendance not marked yet"],"Aap aaye:":["آپ آئے:","You came:"],"Aap gaye:":["آپ گئے:","You left:"],
+"QR scan karke Check-in":["QR اسکین کر کے چیک اِن","Scan QR to check in"],"QR scan karke Check-out":["QR اسکین کر کے چیک آؤٹ","Scan QR to check out"],"Is mahine":["اس مہینے","This month"],
+"din · Late:":["دن · لیٹ:","days · Late:"],"School ka QR code scan karein":["اسکول کا QR کوڈ اسکین کریں","Scan the school QR code"],"Location check ho rahi hai...":["لوکیشن چیک ہو رہی ہے...","Checking location..."],
+"Camera nahi chal raha?":["کیمرہ نہیں چل رہا؟","Camera not working?"],"QR ke neeche likha code":["QR کے نیچے لکھا کوڈ","Code written under QR"],"Camera nahi khula. Neeche code likh dein.":["کیمرہ نہیں کھلا۔ نیچے کوڈ لکھ دیں۔","Camera did not open. Type the code below."],
+"Location mil gayi":["لوکیشن مل گئی","Location found"],"Location nahi mili. Phone ki location ON karein":["لوکیشن نہیں ملی۔ فون کی لوکیشن آن کریں","Location not found. Turn on phone location"],
+"Is phone par GPS nahi":["اس فون پر GPS نہیں","No GPS on this phone"],"Ye school ka QR nahi":["یہ اسکول کا QR نہیں","This is not the school QR"],"Admin ne abhi school ki location save nahi ki":["ایڈمن نے ابھی اسکول کی لوکیشن محفوظ نہیں کی","Admin has not saved the school location yet"],
+"Location ka intezar... dobara koshish karein":["لوکیشن کا انتظار... دوبارہ کوشش کریں","Waiting for location... try again"],"Aap school se":["آپ اسکول سے","You are"],"m door hain":["میٹر دور ہیں","m away from school"],
+"Haazri lag gayi":["حاضری لگ گئی","Attendance marked"],"Fee ki akhri tareekh (har mahine)":["فیس کی آخری تاریخ (ہر مہینے)","Fee due date (every month)"],"School ka waqt":["اسکول کا وقت","School start time"],
+"Late ki chhoot (minute)":["لیٹ کی چھوٹ (منٹ)","Late grace (minutes)"],"Teacher haazri: QR + GPS":["ٹیچر حاضری: QR + GPS","Teacher attendance: QR + GPS"],
+"1) School mein khare hokar \"Location save\" dabayein. 2) QR print karke office mein laga dein.":["1) اسکول میں کھڑے ہو کر \"لوکیشن محفوظ\" دبائیں۔ 2) QR پرنٹ کر کے آفس میں لگا دیں۔","1) Stand inside the school and press \"Save location\". 2) Print the QR and put it up in the office."],
+"Abhi save nahi":["ابھی محفوظ نہیں","Not saved yet"],"Daira (meter)":["دائرہ (میٹر)","Radius (meters)"],"Abhi ki location save":["ابھی کی لوکیشن محفوظ کریں","Save current location"],"QR print":["QR پرنٹ","Print QR"],
+"Admin login":["ایڈمن لاگ ان","Admin login"],"Demo reset":["ڈیمو ری سیٹ","Reset demo"],"Saara demo data mita kar naya shuru karein?":["سارا ڈیمو ڈیٹا مٹا کر نیا شروع کریں؟","Delete all demo data and start fresh?"],
+"Ye student delete karein?":["یہ طالب علم حذف کریں؟","Delete this student?"],"Ye teacher delete karein?":["یہ ٹیچر حذف کریں؟","Delete this teacher?"],"Save ho gaya":["محفوظ ہو گیا","Saved"],
+"Naam likhein":["نام لکھیں","Enter a name"],"Naam, mobile aur PIN zaroori":["نام، موبائل اور پن ضروری ہیں","Name, mobile and PIN are required"],"Photo chhoti ho gayi":["تصویر چھوٹی ہو گئی","Photo compressed"],
+"Print yahan nahi chalta, asal link par chalega":["پرنٹ یہاں نہیں چلتا، اصل لنک پر چلے گا","Print does not work here, use the real link"],"Location le raha hoon...":["لوکیشن لے رہا ہوں...","Getting location..."],
+"School ki location save":["اسکول کی لوکیشن محفوظ","School location saved"],"School Manager":["اسکول مینیجر","School Manager"],"Play Group":["پلے گروپ","Play Group"],"Nursery":["نرسری","Nursery"],"Prep (KG)":["پریپ (KG)","Prep (KG)"],
+"Teachers":["ٹیچرز","Teachers"],"Students":["طلبہ","Students"],"Class":["کلاس","Class"],"Roll":["رول","Roll"],"Admin":["ایڈمن","Admin"],"Teacher":["ٹیچر","Teacher"],"· Demo":["· ڈیمو","· Demo"],"Paid":["ادا شدہ","Paid"],"Late":["لیٹ","Late"],
+"PAID":["ادا شدہ","PAID"],"Card":["کارڈ","Card"],"Print":["پرنٹ","Print"],"Check-in":["چیک اِن","Check-in"],"Ph:":["فون:","Ph:"],"No.":["نمبر","No."],"card":["کارڈ","card"],
+"Jan":["جنوری","Jan"],"Feb":["فروری","Feb"],"Mar":["مارچ","Mar"],"Apr":["اپریل","Apr"],"May":["مئی","May"],"Jun":["جون","Jun"],"Jul":["جولائی","Jul"],"Aug":["اگست","Aug"],"Sep":["ستمبر","Sep"],"Oct":["اکتوبر","Oct"],"Nov":["نومبر","Nov"],"Dec":["دسمبر","Dec"]
+};
+const _phKeys=Object.keys(TX_PHRASE).sort((a,b)=>b.length-a.length);
+const _phRe=new RegExp("(?<![A-Za-z])("+_phKeys.map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|")+")(?![A-Za-z])","g");
+function trs(str){if(LANG==="ru"||!str)return str;const i=LANG==="ur"?0:1;const t=str.trim();if(TX_EXACT[t])return str.replace(t,TX_EXACT[t][i]);return str.replace(_phRe,m=>TX_PHRASE[m][i])}
+let _trBusy=false;
+function translateNode(root){if(LANG==="ru"||!root)return;_trBusy=true;
+  if(root.nodeType===3){const v=trs(root.nodeValue);if(v!==root.nodeValue)root.nodeValue=v}
+  else if(root.nodeType===1){if(root.closest&&root.closest("script,style,.notr"))return _trBusy=false;
+    const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){if(n.parentNode.closest(".notr,script,style"))continue;const v=trs(n.nodeValue);if(v!==n.nodeValue)n.nodeValue=v}
+    (root.matches&&root.matches("[placeholder]")?[root]:[]).concat([...root.querySelectorAll("[placeholder]")]).forEach(e=>{const v=trs(e.placeholder);if(v!==e.placeholder)e.placeholder=v})}
+  _trBusy=false}
+new MutationObserver(ms=>{if(_trBusy||LANG==="ru")return;ms.forEach(m=>{if(m.type==="characterData")translateNode(m.target);else m.addedNodes.forEach(translateNode)})}).observe(document.body,{childList:true,subtree:true,characterData:true});
+function applyDir(){const h=document.documentElement;h.dir=LANG==="ur"?"rtl":"ltr";h.lang=LANG==="ur"?"ur":"en";document.body.classList.toggle("ur",LANG==="ur")}
+function setLang(l){LANG=l;try{localStorage.setItem("school_lang",l)}catch(e){}applyDir();render();translateNode($("#printArea"))}
+function langSel(){return `<select class="lsel notr" onchange="setLang(this.value)"><option value="ru" ${LANG==="ru"?"selected":""}>Roman Urdu</option><option value="ur" ${LANG==="ur"?"selected":""}>اردو</option><option value="en" ${LANG==="en"?"selected":""}>English</option></select>`}
+applyDir();
+
 /* ============ RENDER ============ */
 function go(t){S.tab=t;S.q="";render();window.scrollTo(0,0)}
 function render(){
   const app=$("#app");
-  if(!S.user){app.innerHTML=`<header><div><h1>🏫 School Manager</h1><small>Demo</small></div></header><main>${viewLogin()}</main>`;lt("a");return}
+  if(!S.user){app.innerHTML=`<header><div><h1>🏫 School Manager</h1><small>Demo</small></div>${langSel()}</header><main>${viewLogin()}</main>`;lt("a");return}
   const admin=S.user.role==="admin";
   const tabs=admin?[["dash","🏠","Home"],["stu","🎒","Students"],["fees","🧾","Fee"],["teach","👩‍🏫","Teachers"],["set","⚙️","Settings"]]:[["tcheck","✅","Haazri"]];
   const v={dash:viewDash,stu:viewStudents,fees:viewFees,teach:viewTeach,set:viewSet,tcheck:viewTCheck}[S.tab]||viewDash;
-  app.innerHTML=`<header><div><h1>🏫 ${esc(mem.settings.school)}</h1><small>${admin?"Admin":"Teacher"} · Demo</small></div>${!admin?'<button class="btn sec sm" onclick="logout()">Logout</button>':''}</header><main>${v()}</main>
+  app.innerHTML=`<header><div><h1 class="notr">🏫 ${esc(mem.settings.school)}</h1><small>${admin?"Admin":"Teacher"} · Demo</small></div><div class="row" style="flex-wrap:nowrap">${langSel()}${!admin?'<button class="btn sec sm" onclick="logout()">Logout</button>':''}</div></header><main>${v()}</main>
   ${tabs.length>1?`<nav>${tabs.map(t=>`<button class="${S.tab===t[0]?"on":""}" onclick="go('${t[0]}')"><b>${t[1]}</b>${t[2]}</button>`).join("")}</nav>`:""}`;
   if(S.tab==="teach")repT();
   if(S.tab==="set")drawQR($("#qrBox"),180);
+  translateNode(app);
 }
 render();
 </script>
