@@ -54,6 +54,14 @@ label{font-size:12px;color:var(--mut);display:block;margin:8px 0 3px}
 .chips{display:flex;gap:6px;overflow:auto;padding-bottom:6px;margin-bottom:8px}
 .chips button{white-space:nowrap;border:1px solid var(--bd);background:#fff;border-radius:20px;padding:6px 12px;font-size:13px;cursor:pointer}
 .chips button.on{background:var(--p);color:#fff;border-color:var(--p)}
+.cdd{margin-bottom:10px}
+.cdd .cbtn{width:100%;display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid var(--bd);border-radius:9px;padding:11px 12px;font-size:15px;cursor:pointer;color:var(--tx)}
+.cdd .cbtn b{color:var(--p)}
+.cdd .clist{display:none;background:#fff;border:1px solid var(--bd);border-radius:9px;margin-top:6px;overflow:hidden}
+.cdd.open .clist{display:block}
+.cdd .clist button{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--bd);background:#fff;padding:11px 14px;font-size:15px;cursor:pointer;color:var(--tx)}
+.cdd .clist button:last-child{border-bottom:0}
+.cdd .clist button.on{background:var(--p2);color:var(--p);font-weight:700}
 table{width:100%;border-collapse:collapse;font-size:14px}
 td,th{padding:7px 6px;border-bottom:1px solid var(--bd);text-align:left}
 .big{font-size:44px;text-align:center;margin:6px 0}
@@ -157,13 +165,16 @@ function viewDash(){
 }
 
 /* ============ STUDENTS ============ */
+function clsPicker(){return `<div class="cdd" id="cdd"><button class="cbtn" onclick="this.parentNode.classList.toggle('open')"><span>Class: <b>${S.cls==="Sab"?"Sab classes":S.cls}</b></span><span>▾</span></button>
+  <div class="clist">${["Sab",...CLASSES].map(c=>`<button class="${S.cls===c?"on":""}" onclick="S.cls='${c}';render()">${c==="Sab"?"Sab classes":c}${S.cls===c?" ✓":""}</button>`).join("")}</div></div>`}
+
 function stu(id){return mem.students.find(s=>s.id===id)}
 function viewStudents(){
   let L=mem.students.filter(s=>(S.cls==="Sab"||s.cls===S.cls)&&(!S.q||(s.name+s.father+s.phone).toLowerCase().includes(S.q.toLowerCase())));
   L.sort((a,b)=>CLASSES.indexOf(a.cls)-CLASSES.indexOf(b.cls)||a.name.localeCompare(b.name));
   return `<div class="row"><h2 class="sp">Students (${L.length})</h2><button class="btn" onclick="editStu()">+ Naya admission</button></div>
   <input placeholder="🔍 Naam ya number se dhoondein" value="${esc(S.q)}" oninput="S.q=this.value;rerenderList()"><br><br>
-  <div class="chips">${["Sab",...CLASSES].map(c=>`<button class="${S.cls===c?"on":""}" onclick="S.cls='${c}';render()">${c}</button>`).join("")}</div>
+  ${clsPicker()}
   <div class="card list" id="sl">${L.map(s=>{const sib=mem.students.filter(x=>x.phone===s.phone).length;return `<div class="it" onclick="editStu('${s.id}')" style="cursor:pointer">${avatar(s)}<div class="sp"><b>${esc(s.name)}</b><div class="mut">${esc(s.cls)} · Roll ${esc(s.roll)} · ${esc(s.father)}${sib>1?' · <span class="tag t-warn">'+sib+' bhai/behan</span>':''}</div></div><div style="text-align:right"><b>${rs(netFee(s))}</b><div class="mut">mahana</div></div></div>`}).join("")||'<p class="mut">Koi student nahi.</p>'}</div>`;
 }
 function rerenderList(){const v=S.q;render();const i=document.querySelector('input[placeholder^="🔍"]');if(i){i.focus();i.setSelectionRange(v.length,v.length)}}
@@ -194,7 +205,7 @@ function viewFees(){
   const paid=fs.filter(f=>f.status==="paid"),exp=fs.reduce((a,f)=>a+f.total,0),got=paid.reduce((a,f)=>a+f.total,0);
   const months=[];const d=new Date();d.setDate(1);d.setMonth(d.getMonth()+1);for(let i=0;i<8;i++){months.push(ym(d));d.setMonth(d.getMonth()-1)}
   return `<div class="row"><h2 class="sp">Fee Vouchers</h2><select style="width:auto" onchange="S.month=this.value;render()">${months.map(x=>`<option value="${x}" ${x===m?"selected":""}>${monthName(x)}</option>`).join("")}</select></div>
-  <div class="chips">${["Sab",...CLASSES].map(c=>`<button class="${S.cls===c?"on":""}" onclick="S.cls='${c}';render()">${c}</button>`).join("")}</div>
+  ${clsPicker()}
   <div class="grid"><div class="stat"><div class="n">${fs.length}</div><div class="l">Voucher</div></div><div class="stat"><div class="n" style="color:var(--ok)">${rs(got)}</div><div class="l">Mili (${paid.length})</div></div><div class="stat"><div class="n" style="color:var(--bad)">${rs(exp-got)}</div><div class="l">Baqaya (${fs.length-paid.length})</div></div></div><br>
   <div class="row"><button class="btn" onclick="genVouchers()">⚙️ ${monthName(m)} ke voucher banayein</button>${fs.length?`<button class="btn sec" onclick="printVouchers()">🖨️ Sab print</button>`:""}</div><br>
   <div class="card list">${fs.map(f=>{const st=stu(f.sid);if(!st)return"";return `<div class="it">${avatar(st)}<div class="sp" onclick="showVoucher('${f.id}')" style="cursor:pointer"><b>${esc(st.name)}</b><div class="mut">${esc(st.cls)} · ${rs(f.total)}${f.arrears?' (baqaya '+rs(f.arrears)+' shamil)':''}</div></div>
