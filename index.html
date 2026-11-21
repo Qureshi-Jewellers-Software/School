@@ -6,6 +6,7 @@
 <meta name="color-scheme" content="light only">
 <title>School Manager (Demo)</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <style>
 :root{color-scheme:light;--p:#1b5e9b;--p2:#e8f1fa;--ok:#1e8e4e;--okb:#e5f5ec;--bad:#c0392b;--badb:#fbeaea;--warn:#b7791f;--warnb:#fdf3e1;--tx:#1d2733;--mut:#66727f;--bd:#dde3ea;--bg:#f4f6f9;--card:#fff}
@@ -75,7 +76,22 @@ td,th{padding:7px 6px;border-bottom:1px solid var(--bd);text-align:left}
 .vch .copy{font-size:11px;font-weight:700;border:1px solid #000;padding:1px 6px}
 .vch .tot td{font-weight:700;border-top:1.5px solid #000}
 #printArea{display:none}
+.idc{width:85.6mm;height:54mm;border:1px solid #999;border-radius:3mm;overflow:hidden;background:#fff;color:#111;font-family:Arial,sans-serif;display:flex;flex-direction:column;box-sizing:border-box}
+.idc .ih{flex:none;background:#1b5e9b;color:#fff;padding:1.3mm 3mm;display:flex;justify-content:space-between;align-items:center}
+.idc.tc .ih{background:#1e8e4e}
+.idc .ih b{font-size:3.6mm}.idc .ih span{font-size:2.4mm;font-weight:700;border:1px solid #fff;border-radius:1mm;padding:.3mm 1.2mm}
+.idc .ib{display:flex;gap:2.5mm;padding:1.5mm 3mm 0;flex:1;min-height:0}
+.idc .ip{width:17mm;height:21mm;border:1px solid #bbb;border-radius:1.5mm;overflow:hidden;flex:none;display:flex;align-items:center;justify-content:center;font-size:8mm;color:#1b5e9b;background:#e8f1fa}
+.idc .ip img{width:100%;height:100%;object-fit:cover}
+.idc .id{font-size:2.4mm;line-height:1.28;flex:1;min-width:0}
+.idc .id .nm{font-size:3.4mm;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.idc .id .bg{display:inline-block;background:#c0392b;color:#fff;font-weight:700;border-radius:1mm;padding:0 1.2mm}
+.idc .bcw{text-align:center;padding:0 3mm .6mm;flex:none}.idc .bcw svg{height:8.5mm;max-width:100%}
+.idc .ft{flex:none;font-size:2.1mm;text-align:center;background:#f1f3f5;padding:.6mm}
+.cardgrid{display:grid;grid-template-columns:repeat(2,85.6mm);gap:3mm;justify-content:center}
+@page{size:A4;margin:8mm}
 @media print{
+ body{background:#fff !important}
  body *{visibility:hidden}
  #printArea,#printArea *{visibility:visible}
  #printArea{display:block;position:absolute;left:0;top:0;width:100%}
@@ -107,6 +123,10 @@ function seed(){
 function load(){try{const t=localStorage.getItem(KEY);if(t){mem=JSON.parse(t);return}}catch(e){}mem=seed();save()}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(mem))}catch(e){}}
 load();
+const BLOODS=["","A+","A-","B+","B-","AB+","AB-","O+","O-"];
+function bloodSel(id,v){return `<select id="${id}">${BLOODS.map(b=>`<option value="${b}" ${b===(v||"")?"selected":""}>${b||"Pata nahi"}</option>`).join("")}</select>`}
+function nextCode(pre,list){let n=pre==="S"?1000:100;list.forEach(x=>{const k=parseInt(String(x.code||"").slice(1));if(k>n)n=k});return pre+(n+1)}
+(function(){let ch=0;mem.students.forEach(s=>{if(!s.code){s.code=nextCode("S",mem.students);ch=1}});mem.teachers.forEach(t=>{if(!t.code){t.code=nextCode("T",mem.teachers);ch=1}});if(ch)save()})();
 if(mem.settings.adminUser==="admin"){mem.settings.adminUser="Admin";save()}
 let S={user:null,tab:"dash",cls:"Sab",month:ym(),q:""};
 try{const u=sessionStorage.getItem("school_user");if(u)S.user=JSON.parse(u)}catch(e){}
@@ -173,10 +193,12 @@ function viewStudents(){
   let L=mem.students.filter(s=>(S.cls==="Sab"||s.cls===S.cls)&&(!S.q||(s.name+s.father+s.phone).toLowerCase().includes(S.q.toLowerCase())));
   L.sort((a,b)=>CLASSES.indexOf(a.cls)-CLASSES.indexOf(b.cls)||a.name.localeCompare(b.name));
   return `<div class="row"><h2 class="sp">Students (${L.length})</h2><button class="btn" onclick="editStu()">+ Naya admission</button></div>
+  <div class="row" style="margin-bottom:10px"><button class="btn sec sm" onclick="showCards('s',curStuIds())">🪪 ${S.cls==="Sab"?"Sab students":S.cls} ke card print</button></div>
   <input placeholder="🔍 Naam ya number se dhoondein" value="${esc(S.q)}" oninput="S.q=this.value;rerenderList()"><br><br>
   ${clsPicker()}
   <div class="card list" id="sl">${L.map(s=>{const sib=mem.students.filter(x=>x.phone===s.phone).length;return `<div class="it" onclick="editStu('${s.id}')" style="cursor:pointer">${avatar(s)}<div class="sp"><b>${esc(s.name)}</b><div class="mut">${esc(s.cls)} · Roll ${esc(s.roll)} · ${esc(s.father)}${sib>1?' · <span class="tag t-warn">'+sib+' bhai/behan</span>':''}</div></div><div style="text-align:right"><b>${rs(netFee(s))}</b><div class="mut">mahana</div></div></div>`}).join("")||'<p class="mut">Koi student nahi.</p>'}</div>`;
 }
+function curStuIds(){return mem.students.filter(s=>S.cls==="Sab"||s.cls===S.cls).sort((a,b)=>CLASSES.indexOf(a.cls)-CLASSES.indexOf(b.cls)||(+a.roll||0)-(+b.roll||0)).map(s=>s.id)}
 function rerenderList(){const v=S.q;render();const i=document.querySelector('input[placeholder^="🔍"]');if(i){i.focus();i.setSelectionRange(v.length,v.length)}}
 let tmpPhoto="";
 function editStu(id){
@@ -190,13 +212,14 @@ function editStu(id){
   <div class="f2"><div><label>Class</label><select id="sc">${CLASSES.map(c=>`<option ${c===s.cls?"selected":""}>${c}</option>`).join("")}</select></div>
   <div><label>Roll no.</label><input id="sr" value="${esc(s.roll)}"></div>
   <div><label>Mahana fee</label><input id="sfe" inputmode="numeric" value="${esc(s.fee)}"></div>
-  <div><label>Riayat / Discount</label><input id="sd" inputmode="numeric" value="${esc(s.discount)}"></div></div><br>
-  <div class="row">${id?`<button class="btn bad sm" onclick="delStu('${id}')">Delete</button>`:""}<span class="sp"></span><button class="btn sec" onclick="closeModal()">Wapas</button><button class="btn" onclick="saveStu('${id||""}')">Save</button></div>`);
+  <div><label>Riayat / Discount</label><input id="sd" inputmode="numeric" value="${esc(s.discount)}"></div>
+  <div><label>Blood group</label>${bloodSel("sb",s.blood)}</div></div><br>
+  <div class="row">${id?`<button class="btn bad sm" onclick="delStu('${id}')">Delete</button><button class="btn sec sm" onclick="showCards('s',['${id}'])">🪪 Card</button>`:""}<span class="sp"></span><button class="btn sec" onclick="closeModal()">Wapas</button><button class="btn" onclick="saveStu('${id||""}')">Save</button></div>`);
 }
 function pickPhoto(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const M=320,k=Math.min(1,M/Math.max(im.width,im.height));const c=document.createElement("canvas");c.width=im.width*k;c.height=im.height*k;c.getContext("2d").drawImage(im,0,0,c.width,c.height);tmpPhoto=c.toDataURL("image/jpeg",0.7);$("#pv").innerHTML='<img src="'+tmpPhoto+'">';toast("Photo chhoti ho gayi: "+Math.round(tmpPhoto.length*0.75/1024)+" KB")};im.src=r.result};r.readAsDataURL(f)}
-function saveStu(id){const d={name:$("#sn").value.trim(),father:$("#sf").value.trim(),phone:$("#sp").value.replace(/\D/g,""),cls:$("#sc").value,roll:$("#sr").value.trim(),fee:+$("#sfe").value||0,discount:+$("#sd").value||0,photo:tmpPhoto};
+function saveStu(id){const d={name:$("#sn").value.trim(),father:$("#sf").value.trim(),phone:$("#sp").value.replace(/\D/g,""),cls:$("#sc").value,roll:$("#sr").value.trim(),fee:+$("#sfe").value||0,discount:+$("#sd").value||0,blood:$("#sb").value,photo:tmpPhoto};
   if(!d.name)return toast("Naam likhein");
-  if(id)Object.assign(stu(id),d);else mem.students.push({id:uid(),adm:today(),...d});save();closeModal();toast("Save ho gaya");render()}
+  if(id)Object.assign(stu(id),d);else mem.students.push({id:uid(),adm:today(),code:nextCode("S",mem.students),...d});save();closeModal();toast("Save ho gaya");render()}
 function delStu(id){ask("Ye student delete karein?",()=>{mem.students=mem.students.filter(s=>s.id!==id);mem.fees=mem.fees.filter(f=>f.sid!==id);save();render()})}
 
 /* ============ FEES ============ */
@@ -246,8 +269,9 @@ function hm(t){return t?new Date(t).toLocaleTimeString("en-PK",{hour:"2-digit",m
 function viewTeach(){
   const td=today();
   return `<div class="row"><h2 class="sp">Teachers · Aaj ki haazri</h2><button class="btn" onclick="editT()">+ Teacher</button></div>
+  <div class="row" style="margin-bottom:10px"><button class="btn sec sm" onclick="showCards('t',mem.teachers.map(t=>t.id))">🪪 Saare teachers ke card print</button></div>
   <div class="card list">${mem.teachers.map(t=>{const a=mem.tatt.find(x=>x.tid===t.id&&x.date===td);
-   return `<div class="it"><div class="av">${esc(t.name[0])}</div><div class="sp" onclick="editT('${t.id}')" style="cursor:pointer"><b>${esc(t.name)}</b><div class="mut">${esc(t.subject)} · Aaye: ${hm(a&&a.in)} · Gaye: ${hm(a&&a.out)}</div></div>
+   return `<div class="it">${avatar(t)}<div class="sp" onclick="editT('${t.id}')" style="cursor:pointer"><b>${esc(t.name)}</b><div class="mut">${esc(t.subject)} · Aaye: ${hm(a&&a.in)} · Gaye: ${hm(a&&a.out)}</div></div>
    ${a?(a.late?'<span class="tag t-warn">Late</span>':'<span class="tag t-ok">Haazir</span>'):'<span class="tag t-bad">Ghair-haazir</span>'}</div>`}).join("")}</div>
   <div class="card"><div class="row"><h3 class="sp" style="margin:0">Mahana report</h3><select style="width:auto" id="rm" onchange="repT()">${[0,1,2].map(i=>{const d=new Date();d.setDate(1);d.setMonth(d.getMonth()-i);return `<option value="${ym(d)}">${monthName(ym(d))}</option>`}).join("")}</select></div><div id="rep"></div></div>`;
 }
@@ -255,13 +279,35 @@ function repT(){const m=$("#rm").value;const now=new Date();const [y,mm]=m.split
   let work=0;for(let d=1;d<=last;d++){if(new Date(y,mm-1,d).getDay()!==0)work++}
   $("#rep").innerHTML=`<p class="mut">Kaam ke din (Itwaar chhor kar): ${work}</p><table><tr><th>Teacher</th><th>Haazir</th><th>Late</th><th>Ghair-haazir</th></tr>${mem.teachers.map(t=>{const a=mem.tatt.filter(x=>x.tid===t.id&&x.date.startsWith(m));const l=a.filter(x=>x.late).length;return `<tr><td>${esc(t.name)}</td><td>${a.length}</td><td>${l}</td><td>${Math.max(0,work-a.length)}</td></tr>`}).join("")}</table>`}
 function editT(id){const t=id?tch(id):{name:"",phone:"",subject:"",salary:"",pin:String(Math.floor(1000+Math.random()*9000))};
-  modal(`<h3>${id?"Teacher edit":"Naya teacher"}</h3><label>Naam</label><input id="tn" value="${esc(t.name)}"><label>Mobile (login isi se)</label><input id="tp" inputmode="numeric" value="${esc(t.phone)}">
+  tmpPhoto=t.photo||"";
+  modal(`<h3>${id?"Teacher edit":"Naya teacher"}</h3>
+  <div class="row"><div class="av" id="pv" style="width:72px;height:72px">${tmpPhoto?'<img src="'+tmpPhoto+'">':"📷"}</div>
+  <label class="btn sec sm" style="color:var(--p);margin:0">Photo lagayein<input type="file" accept="image/*" style="display:none" onchange="pickPhoto(this)"></label></div>
+  <label>Naam</label><input id="tn" value="${esc(t.name)}"><label>Mobile (login isi se)</label><input id="tp" inputmode="numeric" value="${esc(t.phone)}">
   <div class="f2"><div><label>Subject</label><input id="ts" value="${esc(t.subject)}"></div><div><label>Tankhwah</label><input id="tsal" inputmode="numeric" value="${esc(t.salary)}"></div></div>
-  <label>Login PIN</label><input id="tpin" inputmode="numeric" value="${esc(t.pin)}"><br><br>
-  <div class="row">${id?`<button class="btn bad sm" onclick="delT('${id}')">Delete</button>`:""}<span class="sp"></span><button class="btn sec" onclick="closeModal()">Wapas</button><button class="btn" onclick="saveT('${id||""}')">Save</button></div>`)}
-function saveT(id){const d={name:$("#tn").value.trim(),phone:$("#tp").value.replace(/\D/g,""),subject:$("#ts").value.trim(),salary:+$("#tsal").value||0,pin:$("#tpin").value.trim()};if(!d.name||!d.phone||!d.pin)return toast("Naam, mobile aur PIN zaroori");
-  if(id)Object.assign(tch(id),d);else mem.teachers.push({id:uid(),...d});save();closeModal();render()}
+  <div class="f2"><div><label>Login PIN</label><input id="tpin" inputmode="numeric" value="${esc(t.pin)}"></div><div><label>Blood group</label>${bloodSel("tb",t.blood)}</div></div><br>
+  <div class="row">${id?`<button class="btn bad sm" onclick="delT('${id}')">Delete</button><button class="btn sec sm" onclick="showCards('t',['${id}'])">🪪 Card</button>`:""}<span class="sp"></span><button class="btn sec" onclick="closeModal()">Wapas</button><button class="btn" onclick="saveT('${id||""}')">Save</button></div>`)}
+function saveT(id){const d={name:$("#tn").value.trim(),phone:$("#tp").value.replace(/\D/g,""),subject:$("#ts").value.trim(),salary:+$("#tsal").value||0,pin:$("#tpin").value.trim(),blood:$("#tb").value,photo:tmpPhoto};if(!d.name||!d.phone||!d.pin)return toast("Naam, mobile aur PIN zaroori");
+  if(id)Object.assign(tch(id),d);else mem.teachers.push({id:uid(),code:nextCode("T",mem.teachers),...d});save();closeModal();render()}
 function delT(id){ask("Ye teacher delete karein?",()=>{mem.teachers=mem.teachers.filter(t=>t.id!==id);save();render()})}
+
+/* ============ ID CARDS ============ */
+function cardHTML(kind,x){const s=mem.settings,isT=kind==="t";
+  const rows=isT?`<div class="nm">${esc(x.name)}</div><div>Subject: <b>${esc(x.subject||"-")}</b></div><div>Mobile: <b>${esc(x.phone)}</b></div><div>ID: <b>${esc(x.code)}</b></div>`
+   :`<div class="nm">${esc(x.name)}</div><div>Waalid: <b>${esc(x.father||"-")}</b></div><div>Class: <b>${esc(x.cls)}</b> · Roll: <b>${esc(x.roll||"-")}</b></div><div>Parents: <b>${esc(x.phone||"-")}</b></div>`;
+  return `<div class="idc ${isT?"tc":""}"><div class="ih"><b>${esc(s.school)}</b><span>${isT?"TEACHER":"STUDENT"}</span></div>
+  <div class="ib"><div class="ip">${x.photo?'<img src="'+x.photo+'">':esc((x.name||"?")[0])}</div><div class="id">${rows}<div>Blood: <span class="bg">${esc(x.blood||"-")}</span></div></div></div>
+  <div class="bcw"><svg class="bc" data-v="${esc(x.code)}"></svg></div><div class="ft">${esc(s.address)} · ${esc(s.phone)}</div></div>`}
+function drawBarcodes(root){root.querySelectorAll("svg.bc").forEach(el=>{try{JsBarcode(el,el.dataset.v,{format:"CODE128",height:32,width:1.6,fontSize:12,margin:0,displayValue:true})}catch(e){el.outerHTML='<div style="font-size:3mm;font-weight:700">'+esc(el.dataset.v)+'</div>'}})}
+let cardSel=null;
+function showCards(kind,ids){const L=ids.map(id=>kind==="t"?tch(id):stu(id)).filter(Boolean);if(!L.length)return toast("Koi record nahi");cardSel={kind,ids};
+  modal(`<h3>🪪 ${L.length} card${L.length>1?"s":""}</h3><p class="mut">Ek A4 page par 10 card print honge. Kaat kar laminate kar lein.</p>
+  <div id="cprev" style="display:flex;flex-direction:column;gap:10px;align-items:center;max-height:55vh;overflow:auto">${L.slice(0,4).map(x=>cardHTML(kind,x)).join("")}${L.length>4?`<p class="mut">...aur ${L.length-4} card</p>`:""}</div><br>
+  <div class="row"><button class="btn sec sp" onclick="closeModal()">Band</button><button class="btn sp" onclick="printCards()">🖨️ Print</button></div>`);
+  drawBarcodes($("#cprev"))}
+function printCards(){const {kind,ids}=cardSel;const L=ids.map(id=>kind==="t"?tch(id):stu(id)).filter(Boolean);const p=$("#printArea");let h="";
+  for(let i=0;i<L.length;i+=10){h+=`<div class="cardgrid ${i+10<L.length?"pbreak":""}">${L.slice(i,i+10).map(x=>cardHTML(kind,x)).join("")}</div>`}
+  p.innerHTML=h;drawBarcodes(p);setTimeout(()=>{try{window.print()}catch(e){toast("Print yahan nahi chalta, asal link par chalega")}},300)}
 
 /* ============ TEACHER CHECK-IN (QR + GPS) ============ */
 let scanner=null;
